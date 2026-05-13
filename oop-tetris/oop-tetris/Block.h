@@ -1,51 +1,62 @@
 #pragma once
 
-enum class Color {
-    BLACK         = 0,
-    DARK_BLUE     = 1,
-    DARK_GREEN    = 2,
-    DARK_SKY_BLUE = 3,
-    DARK_RED      = 4,
-    DARK_VIOLET   = 5,
-    DARK_YELLOW   = 6,
-    GRAY          = 7,
-    DARK_GRAY     = 8,
-    BLUE          = 9,
-    GREEN         = 10,
-    SKY_BLUE      = 11,
-    RED           = 12,
-    VIOLET        = 13,
-    YELLOW        = 14,
-    WHITE         = 15,
+#include <cstring>
+
+enum class BlockColor {
+    BLACK = 0,  /* 까망 */
+    DARK_BLUE = 1,  /* 어두운 파랑 */
+    DARK_GREEN = 2,  /* 어두운 초록 */
+    DARK_SKY_BLUE = 3,  /* 어두운 하늘 */
+    DARK_RED = 4,  /* 어두운 빨강 */
+    DARK_VOILET = 5,  /* 어두운 보라 */
+    DARK_YELLOW = 6,  /* 어두운 노랑 */
+    GRAY = 7,  /* 회색 */
+    DARK_GRAY = 8,  /* 어두운 회색 */
+    BLUE = 9,  /* 파랑 */
+    GREEN = 10, /* 초록 */
+    SKY_BLUE = 11, /* 하늘 */
+    RED = 12, /* 빨강 */
+    VOILET = 13, /* 보라 */
+    YELLOW = 14, /* 노랑 */
+    WHITE = 15  /* 하양 */
 };
 
 class Block {
 protected:
-    int x;                    // 현재 기준 열 좌표
-    int y;                    // 현재 기준 행 좌표
-    int angle;                // 회전 상태 (0~3)
-    int shapeMatrix[4][4][4]; // 블록 형태 데이터 ? [각도][행][열], 자식 클래스에서 초기화
-    Color color;              // 블록 색상
+    int x, y;
+    int angle;
+    int shapeMatrix[4][4][4];
+    BlockColor color;
+
+    Block(int startX, int startY, BlockColor c, const int data[4][4][4])
+        : x(startX), y(startY), angle(0), color(c) {
+        memcpy(shapeMatrix, data, sizeof(shapeMatrix));
+    }
 
 public:
-    virtual ~Block() = default;
+    virtual ~Block() {}
 
-    void move(int dx, int dy) { x += dx; y += dy; }
+    void move(int dx, int dy) {
+        x += dx;
+        y += dy;
+    }
 
-    virtual void rotate() = 0;
+    // 기본 rotate 설정
+    virtual void rotate() {
+        angle = (angle + 1) % 4;
+    }
 
-    int   getX()     const { return x; }
-    int   getY()     const { return y; }
-    int   getAngle() const { return angle; }
-    Color getColor() const { return color; }
+    // Getter 함수 모음
+    int getX() const { return x; }
+    int getY() const { return y; }
+    int getAngle() const { return angle; }
+    BlockColor getColor() const { return color; }
 
-    // 현재 angle 기준 형태 데이터 반환
-    const int (*getShapeData() const)[4] {
+    const int (*getShapeData(int angle) const)[4] {
         return shapeMatrix[angle];
     }
 
-    // 임의의 angle 기준 형태 데이터 반환
-    const int (*getShapeData(int targetAngle) const)[4] {
-        return shapeMatrix[targetAngle];
+    const int (*getShapeData() const)[4] {
+        return shapeMatrix[angle];
     }
 };

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Block.h"
 
 //¡á¡á¡á¡á ¸ð¾ç

@@ -14,7 +14,8 @@ Board::Board() {
     }
 }
 
-// shape[row][col] == 0 이면 해당 회전 상태에서 빈 셀.
+// (nextX, nextY)에서 nextAngle 각도로 block을 놓았을 때
+// 벽 또는 이미 고정된 블록과 충돌하면 true 반환.
 bool Board::checkCollision(const Block& block, int nextX, int nextY, int nextAngle) const {
     const int (*shape)[4] = block.getShapeData(nextAngle);
 
@@ -42,12 +43,11 @@ bool Board::checkCollision(const Block& block, int nextX, int nextY, int nextAng
     return false;
 }
 
-// 단순히 1을 저장하는 대신 블록의 색상값을 그리드에 기록하여
-// 렌더러가 셀별 색상을 올바르게 출력할 수 있게 한다.
+// 현재 위치에서 block을 그리드에 고정하고 색상값을 기록
 void Board::mergeBlock(const Block& block) {
-    const int (*shape)[4] = block.getShapeData(block.getAngle());
-    int x     = block.getX();
-    int y     = block.getY();
+    const int (*shape)[4] = block.getShapeData();
+    int x = block.getX();
+    int y = block.getY();
     int color = static_cast<int>(block.getColor());
 
     for (int row = 0; row < 4; ++row) {
@@ -59,10 +59,7 @@ void Board::mergeBlock(const Block& block) {
     }
 }
 
-// 행 0~19가 플레이 영역, 열 1~12가 실제 플레이 열 (좌우 벽 제외).
-// 꽉 찬 행 발견 시 위의 모든 행을 한 칸 내린다.
-// 주의: UI 업데이트(애니메이션, 점수 증가)는 GameManager가 담당 ?
-// 이 메서드는 순수 배열 조작 로직만 수행.
+// 꽉 찬 줄(열 1~12)을 모두 제거하고 위 행들을 내린 뒤 제거된 줄 수를 반환
 int Board::clearFullLines() {
     int cleared = 0;
 
