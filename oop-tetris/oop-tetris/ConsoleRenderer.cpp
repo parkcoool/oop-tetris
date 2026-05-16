@@ -1,4 +1,5 @@
-#include "ConsoleRenderer.h"
+﻿#include "ConsoleRenderer.h"
+#include "Blocks.h"
 
 #include <consoleapi2.h> // SetConsoleCursorPosition
 #include <processenv.h> // GetStdHandle
@@ -21,7 +22,7 @@ const int ConsoleRenderer::ab_y = 1;
 
 const HANDLE ConsoleRenderer::hConsole = GetStdHandle((DWORD)-11);
 
-const string ConsoleRenderer::logoString[] = {
+const string ConsoleRenderer::logoString[7] = {
 	"┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
 	"┃ ◆◆◆◆◆ ◆◆◆◆◆ ◆◆◆◆◆ ◆◆◆◆   ◆◆◆   ◆◆◆◆ ┃",
 	"┃   ◆   ◆       ◆   ◆   ◆   ◆   ◆     ┃",
@@ -31,7 +32,7 @@ const string ConsoleRenderer::logoString[] = {
 	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 };
 
-const string ConsoleRenderer::informationString[] = {
+const string ConsoleRenderer::informationString[7] = {
 	"┏━━━━━━━━━<GAME KEY>━━━━━━━━━┓",
 	"┃ UP   : Rotate Block        ┃",
 	"┃ DOWN : Move One-Step Down  ┃",
@@ -41,7 +42,7 @@ const string ConsoleRenderer::informationString[] = {
 	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 };
 
-const string ConsoleRenderer::gameoverString[] = {
+const string ConsoleRenderer::gameoverString[5] = {
 	"┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
 	"┃**************************┃",
 	"┃*        GAME OVER       *┃",
@@ -61,68 +62,43 @@ void ConsoleRenderer::SetColor(BlockColor color) {
 
 /******************** public functions ********************/
 
-void ConsoleRenderer::show_cur_block(int shape, int angle, int x, int y) {
-	switch (shape)
-	{
-	case 0:
-		SetColor(BlockColor::RED);
-		break;
-	case 1:
-		SetColor(BlockColor::BLUE);
-		break;
-	case 2:
-		SetColor(BlockColor::SKY_BLUE);
-		break;
-	case 3:
-		SetColor(BlockColor::WHITE);
-		break;
-	case 4:
-		SetColor(BlockColor::YELLOW);
-		break;
-	case 5:
-		SetColor(BlockColor::VOILET);
-		break;
-	case 6:
-		SetColor(BlockColor::GREEN);
-		break;
-	}
+void ConsoleRenderer::show_cur_block(const Block& block, const int& x, const int& y) {
+	SetColor(static_cast<BlockColor>(block.getColor()));
 
 	for (int i = 0; i < 4; i++)	{
 		for (int j = 0; j < 4; j++)	{
 			if ((j + y) >= 0) {
-				if (block[shape][angle][j][i] == 1)	{
+				if (block.getShapeData()[j][i] == 1)	{
 					gotoxy((i + x) * 2 + ab_x, j + y + ab_y);
 					cout << "■" ;
 				}
 			}
 		}
 	}
-	SetColor(BlockColor::BLACK);
-	gotoxy(77, 23);
+	fixCursor();
 }
 
-void ConsoleRenderer::erase_cur_block(int shape, int angle, int x, int y) {
+void ConsoleRenderer::erase_cur_block(const Block& block) {
 	for (int i = 0; i < 4; i++)	{
 		for (int j = 0; j < 4; j++) {
-			if (block[shape][angle][j][i] == 1) {
-				gotoxy((i + x) * 2 + ab_x, j + y + ab_y);
+			if (block.getShapeData()[j][i] == 1) {
+				gotoxy((i + block.getX()) * 2 + ab_x, j + block.getY() + ab_y);
 				cout << "  ";
 			}
 		}
 	}
 }
 
-void ConsoleRenderer::show_total_block() {
-	SetColor(BlockColor::DARK_GRAY);
+void ConsoleRenderer::show_total_block(const int grid[21][14], const int& level) {
 	for (int i = 0; i < 21; i++) {
 		for (int j = 0; j < 14; j++) {
 			if (j == 0 || j == 13 || i == 20) { //레벨에 따라 외벽 색이 변함
-				SetColor((level % 6) + 1);
+				SetColor(static_cast<BlockColor>((level % 6) + 1));
 			} else {
 				SetColor(BlockColor::DARK_GRAY);
 			}
 			gotoxy((j * 2) + ab_x, i + ab_y);
-			if (total_block[i][j] == 1) {
+			if (grid[i][j] != 0) {
 				cout << "■";
 			} else {
 				cout << "  ";
@@ -130,8 +106,7 @@ void ConsoleRenderer::show_total_block() {
 
 		}
 	}
-	SetColor(BlockColor::BLACK);
-	gotoxy(77, 23);
+	fixCursor();
 }
 
 void ConsoleRenderer::initScreen() {
@@ -146,15 +121,13 @@ void ConsoleRenderer::initScreen() {
 
 	for (int i = 0; true; i++) {
 		if (i % 40 == 0) {
-			for (j = 0; j < 5; j++)	{
-				gotoxy(4, 10 + j); // 수정
+			for (int j = 0; j < 5; j++)	{
+				gotoxy(4, 10 + j);
 				cout << "                                                          ";
 			}
 
-			show_cur_block(rand() % 7, rand() % 4, 4, 10);
-			show_cur_block(rand() % 7, rand() % 4, 9, 10);
-			show_cur_block(rand() % 7, rand() % 4, 14, 10);
-			show_cur_block(rand() % 7, rand() % 4, 19, 10);
+			for (int i = 0; i < 4; i++)
+				show_random_block(4 + 5 * i, 10);
 		}
 		if (_kbhit()) break;
 		Sleep(30);
@@ -163,8 +136,8 @@ void ConsoleRenderer::initScreen() {
 	system("cls");
 }
 
-void ConsoleRenderer::input_data() {
-	int i = 0;
+int ConsoleRenderer::input_data() {
+	int level = 0;
 	SetColor(BlockColor::GRAY);
 	for (int i = 0; i < 7; i++) {
 		gotoxy(10, 7 + i);
@@ -173,10 +146,10 @@ void ConsoleRenderer::input_data() {
 	}
 
 
-	while (i < 1 || i > 8) {
+	while (level < 1 || level > 8) {
 		gotoxy(12, 5);
-		printf("Select Start level[1-8]:       \b\b\b\b\b\b\b");
-		cin >> i;
+		cout << "Select Start level[1-8]:       \b\b\b\b\b\b\b";
+		cin >> level;
 		if (cin.fail()) {
 			cin.clear();
 			cin.ignore((numeric_limits<streamsize>::max)(), '\n');
@@ -184,15 +157,15 @@ void ConsoleRenderer::input_data() {
 		}
 	}
 
-	level = i - 1;
 	system("cls");
+	return level - 1;
 }
 
-void ConsoleRenderer::show_next_block(int shape) {
-	SetColor(BlockColor((level + 1) % 6 + 1));
+void ConsoleRenderer::show_next_block(Block& block, const int& level) {
+	SetColor(static_cast<BlockColor>((level + 1) % 6 + 1));
 	for (int i = 1; i < 7; i++) {
-		gotoxy(33, i);
 		for (int j = 0; j < 6; j++) {
+			gotoxy(33 + 2 * j, i);
 			if (i == 1 || i == 6 || j == 0 || j == 5) {
 				cout << "■";
 			} else {
@@ -200,10 +173,10 @@ void ConsoleRenderer::show_next_block(int shape) {
 			}
 		}
 	}
-	show_cur_block(shape, 0, 15, 1);
+	show_cur_block(block, 15, 1);
 }
 
-void ConsoleRenderer::show_gamestat(bool printed_text) {
+void ConsoleRenderer::show_gamestat(bool printed_text, const int& level, const int& score, const int& clearedLines, StageData& stage_data) {
 	SetColor(BlockColor::GRAY);
 	if (printed_text)
 	{
@@ -221,7 +194,7 @@ void ConsoleRenderer::show_gamestat(bool printed_text) {
 	gotoxy(35, 10);
 	cout << setw(10) << score;
 	gotoxy(35, 13);
-	cout << setw(10) << stage_data[level].clear_line - lines;
+	cout << setw(10) << stage_data.getClearLine() - clearedLines;
 }
 
 void ConsoleRenderer::show_gameover() {
@@ -235,4 +208,58 @@ void ConsoleRenderer::show_gameover() {
 	Sleep(1000);
 	_getche();
 	system("cls");
+}
+
+// 맨 처음 시작 화면에서 블록을 무작위로 생성해 출력한다.
+void ConsoleRenderer::show_random_block(int x, int y)
+{
+	Block* randomBlock = nullptr;
+	switch (rand() % 7) {
+		case 0:
+			randomBlock = new OBlock(x, y);
+			break;
+		case 1:
+			randomBlock = new IBlock(x, y);
+			break;
+		case 2:
+			randomBlock = new ZBlock(x, y);
+			break;
+		case 3:
+			randomBlock = new SBlock(x, y);
+			break;
+		case 4:
+			randomBlock = new TBlock(x, y);
+			break;
+		case 5:
+			randomBlock = new JBlock(x, y);
+			break;
+		default:
+			randomBlock = new LBlock(x, y);
+			break;
+	}
+	show_cur_block(*randomBlock, x, y);
+	delete randomBlock;
+}
+
+// 꽉 찬 줄을 제거하는 애니메이션
+void ConsoleRenderer::show_clear_animation(const int& row)
+{
+	SetColor(BlockColor::BLUE);
+	for (int j = 1; j < 13; j++)
+	{
+		gotoxy(2 * j + ab_x, row + ab_y);
+		cout << "□";
+		Sleep(10);
+	}
+	for (int j = 1; j < 13; j++)
+	{
+		gotoxy(2 * j + ab_x, row + ab_y);
+		cout << "  ";
+		Sleep(10);
+	}
+}
+
+// 커서가 계속 움직이는 것을 방지하기 위해 고정시킨다.
+void ConsoleRenderer::fixCursor() {
+	gotoxy(77, 23);
 }

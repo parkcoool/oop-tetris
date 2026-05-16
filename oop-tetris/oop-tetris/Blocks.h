@@ -13,6 +13,10 @@ public:
     void rotate() override {
         angle = (angle + 1) % 2;
     }
+
+    const int (*getShapeData(int angle) const)[4] override {
+        return shapeMatrix[angle % 2];
+    }
 private:
     static inline int I_DATA[2][4][4] = {
         { {1,0,0,0},
@@ -41,8 +45,12 @@ public:
     // 겹치는 모양 제거
     void rotate() override { }
 
+    const int (*getShapeData(int angle) const)[4] override {
+        return shapeMatrix[0];
+    }
+
 private:
-    static inline int O_DATA[4][4][4] = {
+    static inline int O_DATA[1][4][4] = {
         { {1,1,0,0}, 
           {1,1,0,0}, 
           {0,0,0,0}, 
@@ -172,6 +180,10 @@ public:
         angle = (angle + 1) % 2;
     }
 
+    const int (*getShapeData(int angle) const)[4] override {
+        return shapeMatrix[angle % 2];
+    }
+
 private:
     static inline int Z_DATA[2][4][4] = {
         { {1,1,0,0},
@@ -198,6 +210,10 @@ public:
     // 겹치는 모양 제거
     void rotate() override {
         angle = (angle + 1) % 2;
+    }
+
+    const int (*getShapeData(int angle) const)[4] override {
+        return shapeMatrix[angle % 2];
     }
 
 private:

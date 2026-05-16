@@ -16,7 +16,7 @@ protected:
     int shapeMatrix[4][4][4];
     BlockColor color;
 
-    Block(int startX, int startY, BlockColor c, const int data[4][4][4])
+    Block(int startX, int startY, BlockColor c, const int data[][4][4])
         : x(startX), y(startY), angle(0), color(c) {
         memcpy(shapeMatrix, data, sizeof(shapeMatrix));
     }
@@ -40,8 +40,9 @@ public:
     int getAngle() const { return angle; }
     BlockColor getColor() const { return color; }
 
-    const int (*getShapeData(int angle) const)[4] {
-        return shapeMatrix[angle];
+    // 현재 블록의 정보를 반환하는 기본 설정
+    virtual const int (*getShapeData(int angle) const)[4] {
+        return shapeMatrix[angle % 4];
     }
 
     const int (*getShapeData() const)[4] {

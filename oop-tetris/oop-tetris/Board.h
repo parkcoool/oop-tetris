@@ -10,7 +10,7 @@ private:
     int grid[21][14];
 
 public:
-    Board();
+    Board() = default;
     ~Board() = default;
 
     // (nextX, nextY)에서 nextAngle 각도로 block을 놓았을 때
@@ -20,8 +20,14 @@ public:
     // 현재 위치에서 block을 그리드에 고정하고 색상값을 기록
     void mergeBlock(const Block& block);
 
-    // 꽉 찬 줄(열 1~12)을 모두 제거하고 위 행들을 내린 뒤 제거된 줄 수를 반환
-    int clearFullLines();
+    // 꽉 찬 줄(열 1~12)이 있는지 확인한다.
+    bool checkRow(const int& row);
+
+    // 꽉 찬 줄을 제거하고 위에 있는 행들을 내린다.
+    void clearRow(const int& row);
+
+    // 현재 그리드를 초기화
+    void clearBoard();
 
     const int (*getGrid() const)[14];
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <conio.h>
-#include "block.h"
+#include "Block.h"
 
 enum class Command {
     NONE,
@@ -16,8 +16,7 @@ enum class Command {
 class InputHandler {
 public:
     Command getCommand() {
-        if (!_kbhit()) return Command::NONE;
-
+        
         int key = _getch();
 
         if (key == 0 || key == 224) {

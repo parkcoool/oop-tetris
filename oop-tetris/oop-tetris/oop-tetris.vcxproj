@@ -131,15 +131,21 @@
     <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="ConsoleRenderer.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="InputHandler.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="ConsoleRenderer.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
