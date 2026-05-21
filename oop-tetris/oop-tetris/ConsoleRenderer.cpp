@@ -62,7 +62,20 @@ void ConsoleRenderer::SetColor(BlockColor color) {
 
 /******************** public functions ********************/
 
-void ConsoleRenderer::show_cur_block(const Block& block, const int& x, const int& y) {
+ConsoleRenderer::ConsoleRenderer() 
+	: randomBlocks(
+		new IBlock(0, 0), new OBlock(0, 0), new ZBlock(0, 0),
+		new SBlock(0, 0), new JBlock(0, 0), new LBlock(0, 0), new TBlock(0, 0)
+	)
+{
+}
+
+ConsoleRenderer::~ConsoleRenderer() {
+	for (int i = 0; i < 7; i++)
+		delete randomBlocks[i];
+}
+
+void ConsoleRenderer::show_cur_block(const Block& block, int x, int y) {
 	SetColor(static_cast<BlockColor>(block.getColor()));
 
 	for (int i = 0; i < 4; i++)	{
@@ -89,21 +102,25 @@ void ConsoleRenderer::erase_cur_block(const Block& block) {
 	}
 }
 
-void ConsoleRenderer::show_total_block(const int grid[21][14], const int& level) {
+void ConsoleRenderer::show_total_block(const int grid[21][14], int level, bool changeAll) {
 	for (int i = 0; i < 21; i++) {
 		for (int j = 0; j < 14; j++) {
-			if (j == 0 || j == 13 || i == 20) { //레벨에 따라 외벽 색이 변함
-				SetColor(static_cast<BlockColor>((level % 6) + 1));
-			} else {
-				SetColor(BlockColor::DARK_GRAY);
+			if(changeAll || prevGrid[i][j] != grid[i][j]) {
+				if (j == 0 || j == 13 || i == 20) { //레벨에 따라 외벽 색이 변함
+					SetColor(static_cast<BlockColor>((level % 6) + 1));
+				}
+				else {
+					SetColor(BlockColor::DARK_GRAY);
+				}
+				gotoxy((j * 2) + ab_x, i + ab_y);
+				if (grid[i][j] != 0) {
+					cout << "■";
+				}
+				else {
+					cout << "  ";
+				}
+				prevGrid[i][j] = grid[i][j];
 			}
-			gotoxy((j * 2) + ab_x, i + ab_y);
-			if (grid[i][j] != 0) {
-				cout << "■";
-			} else {
-				cout << "  ";
-			}
-
 		}
 	}
 	fixCursor();
@@ -161,7 +178,7 @@ int ConsoleRenderer::input_data() {
 	return level - 1;
 }
 
-void ConsoleRenderer::show_next_block(Block& block, const int& level) {
+void ConsoleRenderer::show_next_block(const Block& block, int level) {
 	SetColor(static_cast<BlockColor>((level + 1) % 6 + 1));
 	for (int i = 1; i < 7; i++) {
 		for (int j = 0; j < 6; j++) {
@@ -176,7 +193,7 @@ void ConsoleRenderer::show_next_block(Block& block, const int& level) {
 	show_cur_block(block, 15, 1);
 }
 
-void ConsoleRenderer::show_gamestat(bool printed_text, const int& level, const int& score, const int& clearedLines, StageData& stage_data) {
+void ConsoleRenderer::show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data) {
 	SetColor(BlockColor::GRAY);
 	if (printed_text)
 	{
@@ -213,36 +230,13 @@ void ConsoleRenderer::show_gameover() {
 // 맨 처음 시작 화면에서 블록을 무작위로 생성해 출력한다.
 void ConsoleRenderer::show_random_block(int x, int y)
 {
-	Block* randomBlock = nullptr;
-	switch (rand() % 7) {
-		case 0:
-			randomBlock = new OBlock(x, y);
-			break;
-		case 1:
-			randomBlock = new IBlock(x, y);
-			break;
-		case 2:
-			randomBlock = new ZBlock(x, y);
-			break;
-		case 3:
-			randomBlock = new SBlock(x, y);
-			break;
-		case 4:
-			randomBlock = new TBlock(x, y);
-			break;
-		case 5:
-			randomBlock = new JBlock(x, y);
-			break;
-		default:
-			randomBlock = new LBlock(x, y);
-			break;
-	}
-	show_cur_block(*randomBlock, x, y);
-	delete randomBlock;
+	Block* block = randomBlocks[rand() % 7];
+	block->rotate(rand() % 4);
+	show_cur_block(*block, x, y);
 }
 
 // 꽉 찬 줄을 제거하는 애니메이션
-void ConsoleRenderer::show_clear_animation(const int& row)
+void ConsoleRenderer::show_clear_animation(int row)
 {
 	SetColor(BlockColor::BLUE);
 	for (int j = 1; j < 13; j++)

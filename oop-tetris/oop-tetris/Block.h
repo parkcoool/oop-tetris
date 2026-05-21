@@ -30,8 +30,8 @@ public:
     }
 
     // 기본 rotate 설정
-    virtual void rotate() {
-        angle = (angle + 1) % 4;
+    virtual void rotate(int r = 1) {
+        angle = (angle + r) % 4;
     }
 
     // Getter 함수 모음
@@ -47,5 +47,11 @@ public:
 
     const int (*getShapeData() const)[4] {
         return shapeMatrix[angle];
+    }
+
+    // 블록의 정보를 초기화
+    void reset() {
+        x = 5; y = -4;
+        angle = 0;
     }
 };

@@ -21,13 +21,13 @@ public:
     void mergeBlock(const Block& block);
 
     // 꽉 찬 줄(열 1~12)이 있는지 확인한다.
-    bool checkRow(const int& row);
+    bool checkRow(int row);
 
     // 꽉 찬 줄을 제거하고 위에 있는 행들을 내린다.
-    void clearRow(const int& row);
+    void clearRow(int row);
 
     // 현재 그리드를 초기화
-    void clearBoard();
+    void resetBoard();
 
     const int (*getGrid() const)[14];
 };

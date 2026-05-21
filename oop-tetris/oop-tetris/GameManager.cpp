@@ -2,18 +2,12 @@
 #include "Blocks.h"
 
 GameManager::GameManager()
+	: randomBlocks(
+		new TBlock(5, -4), new OBlock(5, -4), new ZBlock(5, -4),
+		new SBlock(5, -4), new JBlock(5, -4), new LBlock(5, -4), new IBlock(5, -4)
+	)
 {
 	initGame();
-	stageData[0] = new StageData(40, 20, 20);
-	stageData[1] = new StageData(38, 18, 20);
-	stageData[2] = new StageData(35, 18, 20);
-	stageData[3] = new StageData(30, 17, 20);
-	stageData[4] = new StageData(25, 16, 20);
-	stageData[5] = new StageData(20, 14, 20);
-	stageData[6] = new StageData(15, 14, 20);
-	stageData[7] = new StageData(10, 13, 20);
-	stageData[8] = new StageData(6, 12, 20);
-	stageData[9] = new StageData(4, 11, 99999);
 
 	// 게임 실행 전 시작 화면을 출력한다.
 	renderer.initScreen();
@@ -22,18 +16,8 @@ GameManager::GameManager()
 
 GameManager::~GameManager()
 {
-	if (currentBlock != nullptr) {
-		delete currentBlock;
-		currentBlock = nullptr;
-	}
-	if (nextBlock != nullptr) {
-		delete nextBlock;
-		nextBlock = nullptr;
-	}
-	for (int i = 0; i < 10; i++) {
-		delete stageData[i];
-		stageData[i] = nullptr;
-	}
+	for (int i = 0; i < 7; i++)
+		delete randomBlocks[i];
 }
 
 // 게임을 끝날 때까지 실행한다.
@@ -43,9 +27,9 @@ void GameManager::run()
 		level = renderer.input_data();
 		currentBlock = makeNewBlock();
 		nextBlock = makeNewBlock();
-		renderer.show_total_block(board.getGrid(), level);
+		renderer.show_total_block(board.getGrid(), level, true);
 		renderer.show_next_block(*nextBlock, level);
-		renderer.show_gamestat(true, level, score, clearedLines, *stageData[level]);
+		renderer.show_gamestat(true, level, score, clearedLines, stageData[level]);
 		for (int i = 1; ; i++) {
 			if (_kbhit()) {
 				Command key = inputHandler.getCommand();
@@ -54,52 +38,43 @@ void GameManager::run()
 				// 가능하다면 수행한다.
 				switch (key) {
 				case Command::ROTATE:		// 회전
-					if (!board.checkCollision(*currentBlock, currentBlock->getX(), currentBlock->getY(), 
-						currentBlock->getAngle() + 1)) {
-						renderer.erase_cur_block(*currentBlock);
-						currentBlock->rotate();
-						renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
-					}
+					update(currentBlock->getX(), currentBlock->getAngle() + 1);
 					break;
 				case Command::MOVE_LEFT:	// 왼쪽으로 한 칸 이동
-					if (!board.checkCollision(*currentBlock, currentBlock->getX() - 1, currentBlock->getY(),
-						currentBlock->getAngle())) {
-						renderer.erase_cur_block(*currentBlock);
-						currentBlock->move(-1, 0);
-						renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
-					}
+					update(currentBlock->getX() - 1, currentBlock->getAngle());
 					break;
 				case Command::MOVE_RIGHT:	// 오른쪽으로 한 칸 이동
-					if (!board.checkCollision(*currentBlock, currentBlock->getX() + 1, currentBlock->getY(),
-						currentBlock->getAngle())) {
-						renderer.erase_cur_block(*currentBlock);
-						currentBlock->move(1, 0);
-						renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
-					}
+					update(currentBlock->getX() + 1, currentBlock->getAngle());
 					break;
 				case Command::MOVE_DOWN:	// 아래로 한 칸 이동
-					update();
+					down();
 					renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
 					break;
 				case Command::HARD_DROP:	// 아래로 더 이상 내려갈 수 없을 때까지 이동
+				{
 					bool collided = false;
-					while (!collided) collided = update();
+					while (!collided) collided = down();
 					renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+					break;
+				}
+				case Command::EXIT:
+					// 메뉴 구현?
+					return;
 					break;
 				};
 			}
-			if (i % stageData[level]->getSpeed() == 0) {
-				update();
+			if (i % stageData[level].getSpeed() == 0) {
+				down();
 				renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
 			}
 
 			// 줄을 제거한 개수가 목표에 도달하면 다음 스테이지로 넘어간다.
-			if (stageData[level]->getClearLine() <= clearedLines)
+			if (stageData[level].getClearLine() <= clearedLines)
 			{
 				level++;
 				clearedLines = 0;
-				renderer.show_total_block(board.getGrid(), level);
-				renderer.show_gamestat(false, level, score, clearedLines, *stageData[level]);
+				renderer.show_total_block(board.getGrid(), level, true);
+				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
 				renderer.show_next_block(*nextBlock, level);
 			}
 			if (isGameOver)
@@ -125,12 +100,22 @@ void GameManager::initGame()
 	level = 0;
 	clearedLines = 0;
 	isGameOver = false;
-	board.clearBoard();
+	board.resetBoard();
+}
+
+// 블록의 회전, 왼쪽 이동, 오른쪽 이동 및 그로 인한 상태 변화를 갱신한다.
+void GameManager::update(int x, int angle) {
+	if (!board.checkCollision(*currentBlock, x, currentBlock->getY(), angle)) {
+		renderer.erase_cur_block(*currentBlock);
+		currentBlock->rotate(angle - currentBlock->getAngle());
+		currentBlock->move(x - currentBlock->getX(), 0);
+		renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+	}
 }
 
 // 블록의 낙하 및 그로 인한 상태 변화를 갱신한다.
 // 충돌한 경우 true 반환
-bool GameManager::update()
+bool GameManager::down()
 {
 	renderer.erase_cur_block(*currentBlock);
 	currentBlock->move(0, 1);
@@ -148,20 +133,21 @@ bool GameManager::update()
 		// 현재 블록을 그리드에 고정 시킨 후
 		// 위에서부터 한 줄씩 검사하여 꽉 찬 줄을 제거한다.
 		board.mergeBlock(*currentBlock);
+		bool cleared = false;
 		for (int row = 0; row < 20; row++) {
 			if (board.checkRow(row)) {
-				clearedLines++;
+				clearedLines++; cleared = true;
 				score += 100 + level * 10 + rand() % 10;
-				renderer.show_total_block(board.getGrid(), level);
+				renderer.show_total_block(board.getGrid(), level, true);
 				renderer.show_clear_animation(row);
 				board.clearRow(row);
-				renderer.show_gamestat(false, level, score, clearedLines, *stageData[level]);
+				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
 			}
 		}
-		renderer.show_total_block(board.getGrid(), level);
+		renderer.show_total_block(board.getGrid(), level, cleared);
 
 		// 현재 블록과 다음 나올 블록을 갱신한다.
-		delete currentBlock;
+		nextBlock->reset();
 		currentBlock = nextBlock;
 		nextBlock = makeNewBlock();
 		renderer.show_next_block(*nextBlock, level);
@@ -173,21 +159,12 @@ bool GameManager::update()
 // 7개의 블록들 중 하나를 생성하여 반환한다.
 Block* GameManager::makeNewBlock()
 {
-	if (rand() % 100 <= stageData[level]->getRate())
-		return new IBlock(5, -4);
-
-	switch (rand() % 6) {
-	case 0:
-		return new OBlock(5, -4);
-	case 1:
-		return new SBlock(5, -4);
-	case 2:
-		return new ZBlock(5, -4);
-	case 3:
-		return new LBlock(5, -4);
-	case 4:
-		return new TBlock(5, -4);
-	default:
-		return new JBlock(5, -4);
+	if (rand() % 100 <= stageData[level].getRate()) {
+		randomBlocks[6]->reset();
+		return randomBlocks[6];
 	}
+
+	int idx = rand() % 6;
+	randomBlocks[idx]->reset();
+	return randomBlocks[idx];
 }

@@ -10,8 +10,8 @@ public:
         : Block(startX, startY, BlockColor::SKY_BLUE, I_DATA) {
     }
     // 겹치는 모양 제거
-    void rotate() override {
-        angle = (angle + 1) % 2;
+    void rotate(int r = 1) override {
+        angle = (angle + r) % 2;
     }
 
     const int (*getShapeData(int angle) const)[4] override {
@@ -43,7 +43,7 @@ public:
     }
 
     // 겹치는 모양 제거
-    void rotate() override { }
+    void rotate(int r = 1) override { }
 
     const int (*getShapeData(int angle) const)[4] override {
         return shapeMatrix[0];
@@ -176,8 +176,8 @@ public:
     }
 
     // 겹치는 모양 제거
-    void rotate() override {
-        angle = (angle + 1) % 2;
+    void rotate(int r = 1) override {
+        angle = (angle + r) % 2;
     }
 
     const int (*getShapeData(int angle) const)[4] override {
@@ -208,8 +208,8 @@ public:
     }
 
     // 겹치는 모양 제거
-    void rotate() override {
-        angle = (angle + 1) % 2;
+    void rotate(int r = 1) override {
+        angle = (angle + r) % 2;
     }
 
     const int (*getShapeData(int angle) const)[4] override {

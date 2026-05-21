@@ -48,7 +48,7 @@ void Board::mergeBlock(const Block& block) {
     }
 }
 
-bool Board::checkRow(const int& row)
+bool Board::checkRow(int row)
 {
     for (int col = 1; col < 13; ++col) {
         if (grid[row][col] == 0) {
@@ -62,7 +62,7 @@ bool Board::checkRow(const int& row)
 
 // 꽉 찬 줄(열 1~12)이 있는지 확인한 다음 모두 제거하고
 // 위에 있는 행들을 내린다.
-void Board::clearRow(const int& row) {
+void Board::clearRow(int row) {
 
     // 해당 행 위의 모든 행을 한 칸씩 내림.
     for (int k = row; k > 0; --k) {
@@ -75,7 +75,7 @@ void Board::clearRow(const int& row) {
 }
 
 // 현재 그리드를 초기화
-void Board::clearBoard()
+void Board::resetBoard()
 {
     for (int row = 0; row < 21; ++row) {
         for (int col = 0; col < 14; ++col) {
