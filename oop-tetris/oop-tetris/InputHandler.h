@@ -2,6 +2,7 @@
 
 #include <conio.h>
 #include "Block.h"
+#include "KeyConfig.h"
 
 enum class Command {
     NONE,
@@ -14,24 +15,20 @@ enum class Command {
 };
 
 class InputHandler {
+    const KeyConfig* config = nullptr;
 public:
+    void setConfig(const KeyConfig& cfg) { config = &cfg; }
+
     Command getCommand() {
-        
-        int key = _getch();
-
-        if (key == 0 || key == 224) {
-            key = _getch();
-            switch (key) {
-            case 72: return Command::ROTATE;
-            case 80: return Command::MOVE_DOWN;
-            case 75: return Command::MOVE_LEFT;
-            case 77: return Command::MOVE_RIGHT;
-            }
+        int key = KeyConfig::readKey();
+        if (config) {
+            if (key == config->rotate)    return Command::ROTATE;
+            if (key == config->moveDown)  return Command::MOVE_DOWN;
+            if (key == config->moveLeft)  return Command::MOVE_LEFT;
+            if (key == config->moveRight) return Command::MOVE_RIGHT;
+            if (key == config->hardDrop)  return Command::HARD_DROP;
+            if (key == config->pause)     return Command::EXIT;
         }
-
-        if (key == 32) return Command::HARD_DROP;
-        if (key == 27) return Command::EXIT; 
-
         return Command::NONE;
     }
 

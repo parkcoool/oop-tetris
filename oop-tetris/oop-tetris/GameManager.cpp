@@ -8,6 +8,7 @@ GameManager::GameManager()
 	)
 {
 	initGame();
+	inputHandler.setConfig(keyConfig);
 
 	// 게임 실행 전 시작 화면을 출력한다.
 	renderer.initScreen();
@@ -23,8 +24,26 @@ GameManager::~GameManager()
 // 게임을 끝날 때까지 실행한다.
 void GameManager::run()
 {
+	bool skipToStart = false;
+
 	while (true) {
-		level = renderer.input_data();
+		if (!skipToStart) {
+			renderer.clearScreen();
+			ConsoleRenderer::MainMenuResult menu = renderer.show_main_menu();
+
+			if (menu == ConsoleRenderer::MainMenuResult::QUIT) {
+				return;
+			}
+			if (menu == ConsoleRenderer::MainMenuResult::SETTINGS) {
+				renderer.clearScreen();
+				renderer.show_key_settings(keyConfig);
+				continue;
+			}
+			// START 선택
+		}
+		skipToStart = false;
+
+		level = renderer.input_data(keyConfig);
 		currentBlock = makeNewBlock();
 		nextBlock = makeNewBlock();
 		renderer.show_total_block(board.getGrid(), level, true);
@@ -101,8 +120,15 @@ void GameManager::run()
 			Sleep(15);
 		}
 
+		// 재시작이었다면 메인 메뉴를 건너뛰고 바로 레벨 선택으로 간다.
+		bool wasRestarting = isRestarting;
+
 		// 게임 오버 시 루프가 종료되고, 여기서 게임이 초기화되어 새로 시작된다.
 		initGame();
+
+		if (wasRestarting) {
+			skipToStart = true;
+		}
 	}
 }
 

@@ -145,6 +145,7 @@
     <ClInclude Include="ConsoleRenderer.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="KeyConfig.h" />
     <ClInclude Include="StageData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

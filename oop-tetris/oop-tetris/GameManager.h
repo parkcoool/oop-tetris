@@ -3,6 +3,7 @@
 #include "Board.h"
 #include "ConsoleRenderer.h"
 #include "InputHandler.h"
+#include "KeyConfig.h"
 #include "StageData.h"
 
 class GameManager {
@@ -11,6 +12,7 @@ private:
 	Block* currentBlock = nullptr, * nextBlock = nullptr;
 	Block* randomBlocks[7];
 	ConsoleRenderer renderer;
+	KeyConfig keyConfig;
 	InputHandler inputHandler;
 
 	// 레벨별 스테이지의 난이도 정보를 저장한다.

@@ -4,6 +4,7 @@
 #include <string> // string
 #include "Block.h"
 #include "StageData.h"
+#include "KeyConfig.h"
 using namespace std;
 
 class ConsoleRenderer
@@ -23,7 +24,7 @@ public:
 	void erase_cur_block(const Block& block);
 	void show_total_block(const int grid[21][14], int level, bool changeAll = false);
 	void initScreen();
-	int input_data();
+	int input_data(const KeyConfig& config);
 	void show_next_block(const Block& block, int level);
 	void show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data);
 	void show_gameover();
@@ -31,6 +32,13 @@ public:
 	// 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
 	enum class MenuResult { RESUME = 0, RESTART = 1, QUIT = 2 };
 	MenuResult show_pause_menu();
+
+	// 메인 메뉴를 출력하고 선택 결과를 반환한다.
+	enum class MainMenuResult { START = 0, SETTINGS = 1, QUIT = 2 };
+	MainMenuResult show_main_menu();
+
+	// 키 설정 화면을 출력하고 config를 대화식으로 수정한다.
+	void show_key_settings(KeyConfig& config);
 
 	void clearScreen();
 
@@ -46,7 +54,6 @@ private:
 	static const int ab_x, ab_y;
 	static const HANDLE hConsole;
 	static const string logoString[];
-	static const string informationString[];
 	static const string gameoverString[];
 	Block* randomBlocks[7];
 	int prevGrid[21][14] = {};

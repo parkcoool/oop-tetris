@@ -32,17 +32,6 @@ const string ConsoleRenderer::logoString[7] = {
 	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 };
 
-const string ConsoleRenderer::informationString[8] = {
-	"┏━━━━━━━━━<GAME KEY>━━━━━━━━━┓",
-	"┃ UP   : Rotate Block        ┃",
-	"┃ DOWN : Move One-Step Down  ┃",
-	"┃ SPACE: Move Bottom Down    ┃",
-	"┃ LEFT : Move Left           ┃",
-	"┃ RIGHT: Move Right          ┃",
-	"┃ ESC  : Pause Menu          ┃",
-	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-};
-
 const string ConsoleRenderer::gameoverString[5] = {
 	"┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
 	"┃**************************┃",
@@ -154,14 +143,33 @@ void ConsoleRenderer::initScreen() {
 	system("cls");
 }
 
-int ConsoleRenderer::input_data() {
+int ConsoleRenderer::input_data(const KeyConfig& config) {
 	int level = 0;
 	SetColor(BlockColor::GRAY);
-	for (int i = 0; i < 8; i++) {
-		gotoxy(10, 7 + i);
-		cout << informationString[i];
+
+	// 현재 키 바인딩을 동적으로 출력한다.
+	const char* actionNames[6] = {
+		"Rotate", "Move Down", "Hard Drop", "Move Left", "Move Right", "Pause"
+	};
+	const int* keyPtrs[6] = {
+		&config.rotate, &config.moveDown, &config.hardDrop,
+		&config.moveLeft, &config.moveRight, &config.pause
+	};
+
+	gotoxy(10, 7);
+	cout << "┏━━━━━━━━━━<GAME KEY>━━━━━━━━━┓";
+	for (int i = 0; i < 6; i++) {
+		gotoxy(10, 8 + i);
+		cout << "┃ ";
+		cout << left << setw(11) << actionNames[i];
+		cout << ": ";
+		string kname = KeyConfig::keyName(*keyPtrs[i]);
+		cout << left << setw(13) << kname;
+		cout << " ┃";
 		Sleep(10);
 	}
+	gotoxy(10, 14);
+	cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
 
 
 	while (level < 1 || level > 8) {
@@ -287,6 +295,161 @@ ConsoleRenderer::MenuResult ConsoleRenderer::show_pause_menu() {
 
 void ConsoleRenderer::clearScreen() {
 	system("cls");
+}
+
+ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
+	const int menuX = 15, menuY = 10;
+
+	SetColor(BlockColor::YELLOW);
+	for (int i = 0; i < 7; i++) {
+		gotoxy(12, 2 + i);
+		cout << logoString[i];
+	}
+
+	static const string frame[7] = {
+		"┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
+		"┃             MENU                ┃",
+		"┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫",
+		"┃                                 ┃",
+		"┃                                 ┃",
+		"┃                                 ┃",
+		"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+	};
+
+	SetColor(BlockColor::GRAY);
+	for (int i = 0; i < 7; i++) {
+		gotoxy(menuX, menuY + i);
+		cout << frame[i];
+	}
+
+	static const char* options[3] = { "Start Game", "Key Settings", "Quit" };
+	int selected = 0;
+
+	auto drawOptions = [&]() {
+		for (int i = 0; i < 3; i++) {
+			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
+			gotoxy(menuX + 1, menuY + 3 + i);
+			cout << (i == selected ? "> " : "  ") << options[i];
+			int written = 2 + (int)strlen(options[i]);
+			for (int j = written; j < 33; j++) cout << ' ';
+		}
+		fixCursor();
+	};
+
+	drawOptions();
+
+	while (true) {
+		int key = _getch();
+		if (key == 0 || key == 224) {
+			key = _getch();
+			if (key == 72 && selected > 0) selected--;
+			else if (key == 80 && selected < 2) selected++;
+		}
+		else if (key == 13) break;
+		drawOptions();
+	}
+
+	return static_cast<MainMenuResult>(selected);
+}
+
+void ConsoleRenderer::show_key_settings(KeyConfig& config) {
+	const char* actionNames[6] = {
+		"Rotate", "Move Down", "Move Left", "Move Right", "Hard Drop", "Pause"
+	};
+	int* keyRefs[6] = {
+		&config.rotate, &config.moveDown, &config.moveLeft,
+		&config.moveRight, &config.hardDrop, &config.pause
+	};
+	const int startX = 10, startY = 3;
+	int selected = 0;
+
+	auto drawFrame = [&]() {
+		SetColor(BlockColor::YELLOW);
+		gotoxy(startX, startY);
+		cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓";
+		gotoxy(startX, startY + 1);
+		cout << "┃              KEY SETTINGS              ┃";
+		gotoxy(startX, startY + 2);
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
+		for (int i = 0; i < 6; i++) {
+			gotoxy(startX, startY + 3 + i);
+			cout << "┃                                        ┃";
+		}
+		gotoxy(startX, startY + 9);
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
+		gotoxy(startX, startY + 10);
+		cout << "┃ Up/Dn: select  Enter: rebind  ESC:back ┃";
+		gotoxy(startX, startY + 11);
+		cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
+	};
+
+	auto drawKeys = [&]() {
+		for (int i = 0; i < 6; i++) {
+			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
+			gotoxy(startX + 1, startY + 3 + i);
+			cout << (i == selected ? "> " : "  ");
+			cout << left << setw(12) << actionNames[i];
+			cout << ": ";
+			cout << left << setw(14) << KeyConfig::keyName(*keyRefs[i]);
+			cout << "          ";
+		}
+		fixCursor();
+	};
+
+	auto clearStatus = [&]() {
+		gotoxy(startX + 1, startY + 12);
+		cout << "                                              ";
+		fixCursor();
+	};
+
+	drawFrame();
+	drawKeys();
+
+	while (true) {
+		int key = _getch();
+		if (key == 0 || key == 224) {
+			key = _getch();
+			if (key == 72 && selected > 0) selected--;
+			else if (key == 80 && selected < 5) selected++;
+		}
+		else if (key == 27) {
+			break;
+		}
+		else if (key == 13) {
+			// 리바인드 모드
+			SetColor(BlockColor::YELLOW);
+			gotoxy(startX + 1, startY + 12);
+			cout << "Press new key for [" << actionNames[selected] << "]... (ESC=cancel)  ";
+			fixCursor();
+
+			int newKey = KeyConfig::readKey();
+			clearStatus();
+
+			if (newKey != 27) {
+				// 충돌 검사
+				int conflictIdx = -1;
+				for (int j = 0; j < 6; j++) {
+					if (j != selected && *keyRefs[j] == newKey) {
+						conflictIdx = j;
+						break;
+					}
+				}
+
+				if (conflictIdx >= 0) {
+					SetColor(BlockColor::RED);
+					gotoxy(startX + 1, startY + 12);
+					cout << "Already used by [" << actionNames[conflictIdx] << "]! Not changed.  ";
+					fixCursor();
+					Sleep(1500);
+					clearStatus();
+				}
+				else {
+					*keyRefs[selected] = newKey;
+				}
+			}
+		}
+		drawKeys();
+	}
 }
 
 
