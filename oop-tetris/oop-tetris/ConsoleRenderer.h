@@ -28,6 +28,12 @@ public:
 	void show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data);
 	void show_gameover();
 
+	// 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
+	enum class MenuResult { RESUME = 0, RESTART = 1, QUIT = 2 };
+	MenuResult show_pause_menu();
+
+	void clearScreen();
+
 	// 맨 처음 시작 화면에서 블록을 무작위로 생성해 출력한다.
 	void show_random_block(int x, int y);
 

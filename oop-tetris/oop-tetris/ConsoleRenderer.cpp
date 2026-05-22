@@ -32,13 +32,14 @@ const string ConsoleRenderer::logoString[7] = {
 	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 };
 
-const string ConsoleRenderer::informationString[7] = {
+const string ConsoleRenderer::informationString[8] = {
 	"┏━━━━━━━━━<GAME KEY>━━━━━━━━━┓",
 	"┃ UP   : Rotate Block        ┃",
 	"┃ DOWN : Move One-Step Down  ┃",
 	"┃ SPACE: Move Bottom Down    ┃",
 	"┃ LEFT : Move Left           ┃",
 	"┃ RIGHT: Move Right          ┃",
+	"┃ ESC  : Pause Menu          ┃",
 	"┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 };
 
@@ -156,7 +157,7 @@ void ConsoleRenderer::initScreen() {
 int ConsoleRenderer::input_data() {
 	int level = 0;
 	SetColor(BlockColor::GRAY);
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		gotoxy(10, 7 + i);
 		cout << informationString[i];
 		Sleep(10);
@@ -235,7 +236,60 @@ void ConsoleRenderer::show_random_block(int x, int y)
 	show_cur_block(*block, x, y);
 }
 
-// 꽉 찬 줄을 제거하는 애니메이션
+// 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
+ConsoleRenderer::MenuResult ConsoleRenderer::show_pause_menu() {
+	const int menuX = 7, menuY = 7;
+
+	// 메뉴 외곽 프레임 (6행 × 24열)
+	static const string frame[] = {
+		"┏━━━━━━━━━━━━━━━━━━━━━━┓",
+		"┃      PAUSE MENU      ┃",
+		"┣━━━━━━━━━━━━━━━━━━━━━━┫",
+		"┃                      ┃",
+		"┃                      ┃",
+		"┃                      ┃",
+		"┗━━━━━━━━━━━━━━━━━━━━━━┛"
+	};
+
+	SetColor(BlockColor::YELLOW);
+	for (int i = 0; i < 7; i++) {
+		gotoxy(menuX, menuY + i);
+		cout << frame[i];
+	}
+
+	static const char* options[] = { "Resume", "Restart", "Quit" };
+	int selected = 0;
+
+	auto drawOptions = [&]() {
+		for (int i = 0; i < 3; i++) {
+			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
+			gotoxy(menuX + 2, menuY + 3 + i);
+			cout << (i == selected ? "> " : "  ") << options[i] << "          ";
+		}
+		fixCursor();
+	};
+
+	drawOptions();
+
+	while (true) {
+		int key = _getch();
+		if (key == 0 || key == 224) {
+			key = _getch();
+			if (key == 72 && selected > 0) selected--;        // Up
+			else if (key == 80 && selected < 2) selected++;   // Down
+		}
+		else if (key == 13) break; // Enter
+		drawOptions();
+	}
+
+	return static_cast<MenuResult>(selected);
+}
+
+void ConsoleRenderer::clearScreen() {
+	system("cls");
+}
+
+
 void ConsoleRenderer::show_clear_animation(int row)
 {
 	SetColor(BlockColor::BLUE);

@@ -58,9 +58,22 @@ void GameManager::run()
 					break;
 				}
 				case Command::EXIT:
-					// 메뉴 구현?
-					return;
+				{
+					ConsoleRenderer::MenuResult result = renderer.show_pause_menu();
+					if (result == ConsoleRenderer::MenuResult::QUIT) {
+						return;
+					} else if (result == ConsoleRenderer::MenuResult::RESTART) {
+						renderer.clearScreen();
+						isRestarting = true;
+					} else {
+						// RESUME: 보드를 다시 그려서 메뉴 오버레이를 지운다.
+						renderer.show_total_block(board.getGrid(), level, true);
+						renderer.show_next_block(*nextBlock, level);
+						renderer.show_gamestat(true, level, score, clearedLines, stageData[level]);
+						renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+					}
 					break;
+				}
 				};
 			}
 			if (i % stageData[level].getSpeed() == 0) {
@@ -77,9 +90,9 @@ void GameManager::run()
 				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
 				renderer.show_next_block(*nextBlock, level);
 			}
-			if (isGameOver)
+			if (isGameOver || isRestarting)
 			{
-				renderer.show_gameover();
+				if (isGameOver) renderer.show_gameover();
 				break;
 			}
 
@@ -100,6 +113,7 @@ void GameManager::initGame()
 	level = 0;
 	clearedLines = 0;
 	isGameOver = false;
+	isRestarting = false;
 	board.resetBoard();
 }
 

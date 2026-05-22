@@ -20,7 +20,7 @@ private:
 	};
 
 	int score, level, clearedLines;
-	bool isGameOver;
+	bool isGameOver, isRestarting;
 public:
 	GameManager();
 	~GameManager();
