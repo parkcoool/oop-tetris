@@ -144,6 +144,7 @@ void ConsoleRenderer::initScreen() {
 }
 
 int ConsoleRenderer::input_data(const KeyConfig& config) {
+	system("cls");
 	int level = 0;
 	SetColor(BlockColor::GRAY);
 
