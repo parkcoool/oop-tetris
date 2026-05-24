@@ -13,6 +13,10 @@
 #include <limits> // numeric_limits
 #include <iosfwd> // streamsize
 
+#include <fstream> // .txt file
+#include <vector> // pair
+#include <algorithm> // sort
+
 using namespace std;
 
 /******************** static constants ********************/
@@ -299,6 +303,7 @@ void ConsoleRenderer::clearScreen() {
 }
 
 ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
+	PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	const int menuX = 15, menuY = 10;
 
 	SetColor(BlockColor::YELLOW);
@@ -307,10 +312,11 @@ ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
 		cout << logoString[i];
 	}
 
-	static const string frame[7] = {
+	static const string frame[8] = {
 		"┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
 		"┃             MENU                ┃",
 		"┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫",
+		"┃                                 ┃",
 		"┃                                 ┃",
 		"┃                                 ┃",
 		"┃                                 ┃",
@@ -318,16 +324,16 @@ ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
 	};
 
 	SetColor(BlockColor::GRAY);
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		gotoxy(menuX, menuY + i);
 		cout << frame[i];
 	}
 
-	static const char* options[3] = { "Start Game", "Key Settings", "Quit" };
+	static const char* options[4] = { "Start Game", "Key Settings", "Ranking", "Quit" };
 	int selected = 0;
 
 	auto drawOptions = [&]() {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
 			gotoxy(menuX + 1, menuY + 3 + i);
 			cout << (i == selected ? "> " : "  ") << options[i];
@@ -343,8 +349,14 @@ ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
 		int key = _getch();
 		if (key == 0 || key == 224) {
 			key = _getch();
-			if (key == 72 && selected > 0) selected--;
-			else if (key == 80 && selected < 2) selected++;
+			if (key == 72 && selected > 0) {
+				PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				selected--;
+			}
+			else if (key == 80 && selected < 3) {
+				PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				selected++;
+			}
 		}
 		else if (key == 13) break;
 		drawOptions();
@@ -474,4 +486,84 @@ void ConsoleRenderer::show_clear_animation(int row)
 // 커서가 계속 움직이는 것을 방지하기 위해 고정시킨다.
 void ConsoleRenderer::fixCursor() {
 	gotoxy(77, 23);
+}
+
+void ConsoleRenderer::show_ranking()
+{
+	const int startX = 12, startY = 4;
+
+	// 파일에서 데이터 읽기 준비
+	vector<int> rankings;
+	ifstream inFile("rank.txt");
+
+	// 파일이 없으면 새로 생성하고 기본 데이터 넣기
+	if (!inFile.is_open()) {
+		ofstream outFile("rank.txt");
+		if (outFile.is_open()) {
+			outFile.close();
+		}
+		// 기본 데이터를 썼으니 다시 열어서 읽기
+		inFile.open("rank.txt");
+	}
+
+	// 파일 내용 읽어와서 백터에 저장
+	int score;
+	while (inFile >> score) {
+		rankings.push_back(score);
+	}
+	inFile.close();
+
+	// 점수 기준 내림차순 정렬 (높은 점수가 1등)
+	sort(rankings.begin(), rankings.end(), [](int a, int b) {
+		return a > b;
+		});
+
+	// --- UI 출력 부분 ---
+	auto drawFrame = [&]() {
+		SetColor(BlockColor::YELLOW);
+		gotoxy(startX, startY);
+		cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓";
+		gotoxy(startX, startY + 1);
+		cout << "┃              HALL OF FAME              ┃";
+		gotoxy(startX, startY + 2);
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
+		for (int i = 0; i < 5; i++) {
+			gotoxy(startX, startY + 3 + i);
+			cout << "┃                                        ┃";
+		}
+		gotoxy(startX, startY + 8);
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
+		gotoxy(startX, startY + 9);
+		cout << "┃        Press Any Key to Return...      ┃";
+		gotoxy(startX, startY + 10);
+		cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
+		};
+
+	auto drawScores = [&]() {
+		for (int i = 0; i < 5; i++) {
+			gotoxy(startX + 14, startY + 3 + i);
+
+			// 1등은 노란색, 나머지는 회색으로 숫자 표시
+			SetColor(i == 0 ? BlockColor::YELLOW : BlockColor::GRAY);
+			cout << i + 1 << ". ";
+
+			SetColor(BlockColor::WHITE);
+			// 랭킹 데이터가 5개 미만일 때
+			if (i < rankings.size()) {
+				cout << right << setw(10) << rankings[i] << " pts";
+			}
+			else {
+				cout << right << setw(10) << "0" << " pts";
+			}
+		}
+		fixCursor();
+		};
+
+	system("cls");
+	drawFrame();
+	drawScores();
+
+	_getch();
+	PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+	system("cls");
 }

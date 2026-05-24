@@ -34,7 +34,7 @@ public:
 	MenuResult show_pause_menu();
 
 	// 메인 메뉴를 출력하고 선택 결과를 반환한다.
-	enum class MainMenuResult { START = 0, SETTINGS = 1, QUIT = 2 };
+	enum class MainMenuResult { START = 0, SETTINGS = 1, RANKING = 2 , QUIT = 3};
 	MainMenuResult show_main_menu();
 
 	// 키 설정 화면을 출력하고 config를 대화식으로 수정한다.
@@ -50,6 +50,10 @@ public:
 
 	// 커서가 계속 움직이는 것을 방지하기 위해 고정시킨다.
 	void fixCursor();
+
+	// 플레이어 이름과 Ranking을 출력한다.
+	void show_ranking();
+
 private:
 	static const int ab_x, ab_y;
 	static const HANDLE hConsole;

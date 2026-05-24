@@ -1,4 +1,11 @@
-﻿#include "GameManager.h"
+﻿#include <fstream> // .txt file
+#include <vector> // pair
+#include <algorithm> // sort
+#include <windows.h> 
+#include <mmsystem.h> // PlaySound
+
+#pragma comment(lib, "winmm.lib")
+#include "GameManager.h"
 #include "Blocks.h"
 
 GameManager::GameManager()
@@ -7,6 +14,13 @@ GameManager::GameManager()
 		new SBlock(5, -4), new JBlock(5, -4), new LBlock(5, -4), new IBlock(5, -4)
 	)
 {
+	// 파일에서 데이터 읽기 준비
+	vector<pair<string, int>> rankings;
+	ifstream inFile("rank.txt");
+
+	if (!inFile.is_open()) {
+		ofstream outFile("rank.txt");
+	}
 	initGame();
 	inputHandler.setConfig(keyConfig);
 
@@ -35,12 +49,20 @@ void GameManager::run()
 				return;
 			}
 			if (menu == ConsoleRenderer::MainMenuResult::SETTINGS) {
+				PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 				renderer.clearScreen();
 				renderer.show_key_settings(keyConfig);
 				continue;
 			}
+			if (menu == ConsoleRenderer::MainMenuResult::RANKING) {
+				PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				renderer.clearScreen();
+				renderer.show_ranking();
+				continue;
+			}
 			// START 선택
 		}
+		PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		skipToStart = false;
 
 		level = renderer.input_data(keyConfig);
@@ -58,27 +80,33 @@ void GameManager::run()
 				switch (key) {
 				case Command::ROTATE:		// 회전
 					update(currentBlock->getX(), currentBlock->getAngle() + 1);
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::MOVE_LEFT:	// 왼쪽으로 한 칸 이동
 					update(currentBlock->getX() - 1, currentBlock->getAngle());
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::MOVE_RIGHT:	// 오른쪽으로 한 칸 이동
 					update(currentBlock->getX() + 1, currentBlock->getAngle());
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::MOVE_DOWN:	// 아래로 한 칸 이동
 					down();
 					renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::HARD_DROP:	// 아래로 더 이상 내려갈 수 없을 때까지 이동
 				{
 					bool collided = false;
 					while (!collided) collided = down();
 					renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				}
 				case Command::EXIT:
 				{
 					ConsoleRenderer::MenuResult result = renderer.show_pause_menu();
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					if (result == ConsoleRenderer::MenuResult::QUIT) {
 						return;
 					} else if (result == ConsoleRenderer::MenuResult::RESTART) {
@@ -111,6 +139,7 @@ void GameManager::run()
 			}
 			if (isGameOver || isRestarting)
 			{
+				PlaySound(TEXT("lose.wav"), NULL, SND_FILENAME | SND_ASYNC);
 				if (isGameOver) renderer.show_gameover();
 				break;
 			}
@@ -124,6 +153,12 @@ void GameManager::run()
 		bool wasRestarting = isRestarting;
 
 		// 게임 오버 시 루프가 종료되고, 여기서 게임이 초기화되어 새로 시작된다.
+
+		ofstream outFile("rank.txt", ios::app);
+		if (outFile.is_open()) {
+			outFile << score << "\n"; // 파일에 점수 쓰고 줄바꿈
+			outFile.close();
+		}
 		initGame();
 
 		if (wasRestarting) {
@@ -182,6 +217,7 @@ bool GameManager::down()
 				renderer.show_clear_animation(row);
 				board.clearRow(row);
 				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
+				PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
 		renderer.show_total_block(board.getGrid(), level, cleared);
