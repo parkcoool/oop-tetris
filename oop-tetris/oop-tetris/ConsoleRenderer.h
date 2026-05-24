@@ -20,12 +20,12 @@ public:
 	ConsoleRenderer();
 	~ConsoleRenderer();
 
-	void show_cur_block(const Block& block, int x, int y);
-	void erase_cur_block(const Block& block);
-	void show_total_block(const int grid[21][14], int level, bool changeAll = false);
+	void show_cur_block(const Block& block, int x, int y, bool ghost = false);
+	void erase_cur_block(const Block& block, int y);
+	void show_total_block(const int grid[21][14], int level, bool showAll = false);
 	void initScreen();
 	int input_data(const KeyConfig& config);
-	void show_next_block(const Block& block, int level);
+	void show_next_block(const Block& block, int level, bool showAll = false);
 	void show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data);
 	void show_gameover();
 
@@ -53,6 +53,9 @@ public:
 
 	// 플레이어 이름과 Ranking을 출력한다.
 	void show_ranking();
+
+	// 홀드한 블록을 출력한다.
+	void show_hold_block(const Block* block, int level, bool showAll = false);
 
 private:
 	static const int ab_x, ab_y;

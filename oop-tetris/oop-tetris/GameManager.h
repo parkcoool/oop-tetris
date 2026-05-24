@@ -9,7 +9,8 @@
 class GameManager {
 private:
 	Board board;
-	Block* currentBlock = nullptr, * nextBlock = nullptr;
+	Block* currentBlock = nullptr, * nextBlock = nullptr, * holdBlock = nullptr;
+	int ghostY;
 	Block* randomBlocks[7];
 	ConsoleRenderer renderer;
 	KeyConfig keyConfig;
@@ -23,6 +24,9 @@ private:
 
 	int score, level, clearedLines;
 	bool isGameOver, isRestarting;
+	
+	// 하나의 블록당 한 번만 홀드가 가능하다.
+	bool canHold = true;
 public:
 	GameManager();
 	~GameManager();
@@ -42,5 +46,11 @@ public:
 
 	// 7개의 블록들 중 하나를 생성하여 반환한다.
 	Block* makeNewBlock();
+
+	// 유령 블록의 위치를 반환한다.
+	int getGhostPos(const Block& block);
+
+	// 현재 블록을 홀드 슬롯에 저장한다.
+	void hold();
 };
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 using namespace std;
 
@@ -9,6 +9,7 @@ struct KeyConfig {
     int moveDown  = 256 + 80;  // 아래 화살표
     int moveLeft  = 256 + 75;  // 왼쪽 화살표
     int moveRight = 256 + 77;  // 오른쪽 화살표
+    int hold = 9;              // 홀드
     int hardDrop  = 32;        // Space
     int pause     = 27;        // ESC
 

@@ -21,7 +21,7 @@ using namespace std;
 
 /******************** static constants ********************/
 
-const int ConsoleRenderer::ab_x = 5;
+const int ConsoleRenderer::ab_x = 15;
 const int ConsoleRenderer::ab_y = 1;
 
 const HANDLE ConsoleRenderer::hConsole = GetStdHandle((DWORD)-11);
@@ -69,7 +69,7 @@ ConsoleRenderer::~ConsoleRenderer() {
 		delete randomBlocks[i];
 }
 
-void ConsoleRenderer::show_cur_block(const Block& block, int x, int y) {
+void ConsoleRenderer::show_cur_block(const Block& block, int x, int y, bool ghost) {
 	SetColor(static_cast<BlockColor>(block.getColor()));
 
 	for (int i = 0; i < 4; i++)	{
@@ -77,7 +77,7 @@ void ConsoleRenderer::show_cur_block(const Block& block, int x, int y) {
 			if ((j + y) >= 0) {
 				if (block.getShapeData()[j][i] == 1)	{
 					gotoxy((i + x) * 2 + ab_x, j + y + ab_y);
-					cout << "■" ;
+					cout << (ghost ? "□" : "■");
 				}
 			}
 		}
@@ -85,21 +85,21 @@ void ConsoleRenderer::show_cur_block(const Block& block, int x, int y) {
 	fixCursor();
 }
 
-void ConsoleRenderer::erase_cur_block(const Block& block) {
+void ConsoleRenderer::erase_cur_block(const Block& block, int y) {
 	for (int i = 0; i < 4; i++)	{
 		for (int j = 0; j < 4; j++) {
 			if (block.getShapeData()[j][i] == 1) {
-				gotoxy((i + block.getX()) * 2 + ab_x, j + block.getY() + ab_y);
+				gotoxy((i + block.getX()) * 2 + ab_x, j + y + ab_y);
 				cout << "  ";
 			}
 		}
 	}
 }
 
-void ConsoleRenderer::show_total_block(const int grid[21][14], int level, bool changeAll) {
+void ConsoleRenderer::show_total_block(const int grid[21][14], int level, bool showAll) {
 	for (int i = 0; i < 21; i++) {
 		for (int j = 0; j < 14; j++) {
-			if(changeAll || prevGrid[i][j] != grid[i][j]) {
+			if(showAll || prevGrid[i][j] != grid[i][j]) {
 				if (j == 0 || j == 13 || i == 20) { //레벨에 따라 외벽 색이 변함
 					SetColor(static_cast<BlockColor>((level % 6) + 1));
 				}
@@ -138,7 +138,7 @@ void ConsoleRenderer::initScreen() {
 			}
 
 			for (int i = 0; i < 4; i++)
-				show_random_block(4 + 5 * i, 10);
+				show_random_block(-1 + 5 * i, 10);
 		}
 		if (_kbhit()) break;
 		Sleep(30);
@@ -153,27 +153,27 @@ int ConsoleRenderer::input_data(const KeyConfig& config) {
 	SetColor(BlockColor::GRAY);
 
 	// 현재 키 바인딩을 동적으로 출력한다.
-	const char* actionNames[6] = {
-		"Rotate", "Move Down", "Hard Drop", "Move Left", "Move Right", "Pause"
+	const char* actionNames[7] = {
+		"Rotate", "Move Down", "Hard Drop", "Move Left", "Move Right", "Hold", "Pause"
 	};
-	const int* keyPtrs[6] = {
+	const int* keyPtrs[7] = {
 		&config.rotate, &config.moveDown, &config.hardDrop,
-		&config.moveLeft, &config.moveRight, &config.pause
+		&config.moveLeft, &config.moveRight, &config.hold, &config.pause
 	};
 
 	gotoxy(10, 7);
 	cout << "┏━━━━━━━━━━<GAME KEY>━━━━━━━━━┓";
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 7; i++) {
 		gotoxy(10, 8 + i);
 		cout << "┃ ";
 		cout << left << setw(11) << actionNames[i];
 		cout << ": ";
 		string kname = KeyConfig::keyName(*keyPtrs[i]);
-		cout << left << setw(13) << kname;
+		cout << left << setw(14) << kname;
 		cout << " ┃";
 		Sleep(10);
 	}
-	gotoxy(10, 14);
+	gotoxy(10, 15);
 	cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
 
 
@@ -192,39 +192,43 @@ int ConsoleRenderer::input_data(const KeyConfig& config) {
 	return level - 1;
 }
 
-void ConsoleRenderer::show_next_block(const Block& block, int level) {
+void ConsoleRenderer::show_next_block(const Block& block, int level, bool showAll) {
+	if (showAll) {
+		SetColor(BlockColor::GRAY);
+		gotoxy(45, 1);
+		cout << "N E X T";
+	}
 	SetColor(static_cast<BlockColor>((level + 1) % 6 + 1));
 	for (int i = 1; i < 7; i++) {
 		for (int j = 0; j < 6; j++) {
-			gotoxy(33 + 2 * j, i);
-			if (i == 1 || i == 6 || j == 0 || j == 5) {
-				cout << "■";
-			} else {
-				cout << "  ";
+			bool border = (i == 1 || i == 6 || j == 0 || j == 5);
+			if (!border || showAll) {
+				gotoxy(43 + 2 * j, 1 + i);
+				cout << (border ? "■" : "  ");
 			}
 		}
 	}
-	show_cur_block(block, 15, 1);
+	show_cur_block(block, 15, 2);
 }
 
 void ConsoleRenderer::show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data) {
 	SetColor(BlockColor::GRAY);
 	if (printed_text)
 	{
-		gotoxy(35, 7);
+		gotoxy(45, 8);
 		cout << "STAGE";
 
-		gotoxy(35, 9);
+		gotoxy(45, 10);
 		cout << "SCORE";
 
-		gotoxy(35, 12);
+		gotoxy(45, 13);
 		cout << "LINES";
 	}
-	gotoxy(41, 7);
+	gotoxy(51, 8);
 	cout << level + 1;
-	gotoxy(35, 10);
+	gotoxy(45, 11);
 	cout << setw(10) << score;
-	gotoxy(35, 13);
+	gotoxy(45, 14);
 	cout << setw(10) << stage_data.getClearLine() - clearedLines;
 }
 
@@ -251,7 +255,7 @@ void ConsoleRenderer::show_random_block(int x, int y)
 
 // 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
 ConsoleRenderer::MenuResult ConsoleRenderer::show_pause_menu() {
-	const int menuX = 7, menuY = 7;
+	const int menuX = 17, menuY = 7;
 
 	// 메뉴 외곽 프레임 (6행 × 24열)
 	static const string frame[] = {
@@ -366,12 +370,12 @@ ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
 }
 
 void ConsoleRenderer::show_key_settings(KeyConfig& config) {
-	const char* actionNames[6] = {
-		"Rotate", "Move Down", "Move Left", "Move Right", "Hard Drop", "Pause"
+	const char* actionNames[7] = {
+		"Rotate", "Move Down", "Move Left", "Move Right", "Hard Drop", "Hold", "Pause"
 	};
-	int* keyRefs[6] = {
+	int* keyRefs[7] = {
 		&config.rotate, &config.moveDown, &config.moveLeft,
-		&config.moveRight, &config.hardDrop, &config.pause
+		&config.moveRight, &config.hardDrop, &config.hold, &config.pause
 	};
 	const int startX = 10, startY = 3;
 	int selected = 0;
@@ -384,20 +388,20 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		cout << "┃              KEY SETTINGS              ┃";
 		gotoxy(startX, startY + 2);
 		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 7; i++) {
 			gotoxy(startX, startY + 3 + i);
 			cout << "┃                                        ┃";
 		}
-		gotoxy(startX, startY + 9);
-		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
 		gotoxy(startX, startY + 10);
-		cout << "┃ Up/Dn: select  Enter: rebind  ESC:back ┃";
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
 		gotoxy(startX, startY + 11);
+		cout << "┃ Up/Dn: select  Enter: rebind  ESC:back ┃";
+		gotoxy(startX, startY + 12);
 		cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
 	};
 
 	auto drawKeys = [&]() {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 7; i++) {
 			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
 			gotoxy(startX + 1, startY + 3 + i);
 			cout << (i == selected ? "> " : "  ");
@@ -410,7 +414,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 	};
 
 	auto clearStatus = [&]() {
-		gotoxy(startX + 1, startY + 12);
+		gotoxy(startX + 1, startY + 13);
 		cout << "                                              ";
 		fixCursor();
 	};
@@ -423,7 +427,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		if (key == 0 || key == 224) {
 			key = _getch();
 			if (key == 72 && selected > 0) selected--;
-			else if (key == 80 && selected < 5) selected++;
+			else if (key == 80 && selected < 6) selected++;
 		}
 		else if (key == 27) {
 			break;
@@ -431,7 +435,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		else if (key == 13) {
 			// 리바인드 모드
 			SetColor(BlockColor::YELLOW);
-			gotoxy(startX + 1, startY + 12);
+			gotoxy(startX + 1, startY + 13);
 			cout << "Press new key for [" << actionNames[selected] << "]... (ESC=cancel)  ";
 			fixCursor();
 
@@ -441,7 +445,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 			if (newKey != 27) {
 				// 충돌 검사
 				int conflictIdx = -1;
-				for (int j = 0; j < 6; j++) {
+				for (int j = 0; j < 7; j++) {
 					if (j != selected && *keyRefs[j] == newKey) {
 						conflictIdx = j;
 						break;
@@ -450,7 +454,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 
 				if (conflictIdx >= 0) {
 					SetColor(BlockColor::RED);
-					gotoxy(startX + 1, startY + 12);
+					gotoxy(startX + 1, startY + 13);
 					cout << "Already used by [" << actionNames[conflictIdx] << "]! Not changed.  ";
 					fixCursor();
 					Sleep(1500);
@@ -566,4 +570,24 @@ void ConsoleRenderer::show_ranking()
 	_getch();
 	PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	system("cls");
+}
+
+void ConsoleRenderer::show_hold_block(const Block* block, int level, bool showAll) {
+	if (showAll) {
+		SetColor(BlockColor::GRAY);
+		gotoxy(5, 1);
+		cout << "H O L D";
+	}
+	SetColor(static_cast<BlockColor>((2 * level + 1) % 6 + 1));
+	for (int i = 1; i < 7; i++) {
+		for (int j = 0; j < 6; j++) {
+			bool border = (i == 1 || i == 6 || j == 0 || j == 5);
+			if (!border || showAll) {
+				gotoxy(3 + 2 * j, 1 + i);
+				cout << (border ? "■" : "  ");
+			}
+		}
+	}
+	if(block != nullptr)
+		show_cur_block(*block, -5, 2);
 }

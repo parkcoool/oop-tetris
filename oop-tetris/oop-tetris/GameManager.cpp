@@ -68,8 +68,11 @@ void GameManager::run()
 		level = renderer.input_data(keyConfig);
 		currentBlock = makeNewBlock();
 		nextBlock = makeNewBlock();
+		ghostY = getGhostPos(*currentBlock);
 		renderer.show_total_block(board.getGrid(), level, true);
-		renderer.show_next_block(*nextBlock, level);
+		renderer.show_next_block(*nextBlock, level, true);
+		renderer.show_hold_block(holdBlock, level, true);
+		renderer.show_cur_block(*currentBlock, currentBlock->getX(), ghostY, true);
 		renderer.show_gamestat(true, level, score, clearedLines, stageData[level]);
 		for (int i = 1; ; i++) {
 			if (_kbhit()) {
@@ -115,12 +118,14 @@ void GameManager::run()
 					} else {
 						// RESUME: 보드를 다시 그려서 메뉴 오버레이를 지운다.
 						renderer.show_total_block(board.getGrid(), level, true);
-						renderer.show_next_block(*nextBlock, level);
-						renderer.show_gamestat(true, level, score, clearedLines, stageData[level]);
 						renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+						renderer.show_cur_block(*currentBlock, currentBlock->getX(), ghostY, true);
 					}
 					break;
 				}
+				case Command::HOLD:
+					hold();
+					break;
 				};
 			}
 			if (i % stageData[level].getSpeed() == 0) {
@@ -135,7 +140,7 @@ void GameManager::run()
 				clearedLines = 0;
 				renderer.show_total_block(board.getGrid(), level, true);
 				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
-				renderer.show_next_block(*nextBlock, level);
+				renderer.show_next_block(*nextBlock, level, true);
 			}
 			if (isGameOver || isRestarting)
 			{
@@ -175,16 +180,21 @@ void GameManager::initGame()
 	clearedLines = 0;
 	isGameOver = false;
 	isRestarting = false;
+	canHold = true;
+	holdBlock = nullptr;
 	board.resetBoard();
 }
 
 // 블록의 회전, 왼쪽 이동, 오른쪽 이동 및 그로 인한 상태 변화를 갱신한다.
 void GameManager::update(int x, int angle) {
 	if (!board.checkCollision(*currentBlock, x, currentBlock->getY(), angle)) {
-		renderer.erase_cur_block(*currentBlock);
+		renderer.erase_cur_block(*currentBlock, currentBlock->getY());
+		renderer.erase_cur_block(*currentBlock, ghostY);
 		currentBlock->rotate(angle - currentBlock->getAngle());
 		currentBlock->move(x - currentBlock->getX(), 0);
+		ghostY = getGhostPos(*currentBlock);
 		renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+		renderer.show_cur_block(*currentBlock, currentBlock->getX(), ghostY, true);
 	}
 }
 
@@ -192,7 +202,7 @@ void GameManager::update(int x, int angle) {
 // 충돌한 경우 true 반환
 bool GameManager::down()
 {
-	renderer.erase_cur_block(*currentBlock);
+	renderer.erase_cur_block(*currentBlock, currentBlock->getY());
 	currentBlock->move(0, 1);
 	if (board.checkCollision(*currentBlock, currentBlock->getX(), currentBlock->getY(),
 		currentBlock->getAngle())) {
@@ -226,7 +236,10 @@ bool GameManager::down()
 		nextBlock->reset();
 		currentBlock = nextBlock;
 		nextBlock = makeNewBlock();
+		canHold = true;
+		ghostY = getGhostPos(*currentBlock);
 		renderer.show_next_block(*nextBlock, level);
+		renderer.show_cur_block(*currentBlock, currentBlock->getX(), ghostY, true);
 		return true;
 	}
 	return false;
@@ -243,4 +256,35 @@ Block* GameManager::makeNewBlock()
 	int idx = rand() % 6;
 	randomBlocks[idx]->reset();
 	return randomBlocks[idx];
+}
+
+int GameManager::getGhostPos(const Block& block)
+{
+	int x = block.getX(), y = block.getY();
+	while (!board.checkCollision(block, x, y + 1, block.getAngle())) y++;
+	return y;
+}
+
+void GameManager::hold() {
+	if (!canHold) return;
+
+	renderer.erase_cur_block(*currentBlock, currentBlock->getY());
+	renderer.erase_cur_block(*currentBlock, ghostY);
+
+	if (holdBlock == nullptr) {
+		currentBlock->reset(); nextBlock->reset();
+		holdBlock = currentBlock;
+		currentBlock = nextBlock;
+		nextBlock = makeNewBlock();
+	}
+	else {
+		swap(holdBlock, currentBlock);
+		currentBlock->reset();
+		canHold = false;
+	}
+
+	ghostY = getGhostPos(*currentBlock);
+	renderer.show_cur_block(*currentBlock, currentBlock->getX(), currentBlock->getY());
+	renderer.show_cur_block(*currentBlock, currentBlock->getX(), ghostY, true);
+	renderer.show_hold_block(holdBlock, level);
 }

@@ -11,6 +11,7 @@ enum class Command {
     MOVE_DOWN,
     ROTATE,
     HARD_DROP,
+    HOLD,
     EXIT
 };
 
@@ -28,6 +29,7 @@ public:
             if (key == config->moveRight) return Command::MOVE_RIGHT;
             if (key == config->hardDrop)  return Command::HARD_DROP;
             if (key == config->pause)     return Command::EXIT;
+            if (key == config->hold)      return Command::HOLD;
         }
         return Command::NONE;
     }
