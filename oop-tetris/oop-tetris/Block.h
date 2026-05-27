@@ -1,57 +1,38 @@
-#pragma once
-
-#include <cstring>
-
-enum class BlockColor {
-    BLACK, DARK_BLUE, DARK_GREEN, DARK_SKY_BLUE,
-    DARK_RED, DARK_VOILET, DARK_YELLOW, GRAY,
-    DARK_GRAY, BLUE, GREEN, SKY_BLUE,
-    RED, VOILET, YELLOW, WHITE
-};
+ï»¿#pragma once
 
 class Block {
+public:
+    enum class BlockColor {
+        BLACK, DARK_BLUE, DARK_GREEN, DARK_SKY_BLUE,
+        DARK_RED, DARK_VOILET, DARK_YELLOW, GRAY,
+        DARK_GRAY, BLUE, GREEN, SKY_BLUE,
+        RED, VOILET, YELLOW, WHITE
+    };
+
+    virtual ~Block() {}
+
+    void move(int dx, int dy);
+
+    // ê¸°ë³¸ rotate ì„¤ì •
+    virtual void rotate(int r = 1);
+
+    // Getter í•¨ìˆ˜ ëª¨ìŒ
+    int getX() const;
+    int getY() const;
+    int getAngle() const;
+    BlockColor getColor() const;
+
+    // í˜„ì¬ ë¸”ë¡ì˜ ì •ë³´ë¥¼ ë°˜í™˜í•˜ëŠ” ê¸°ë³¸ ì„¤ì •
+    virtual const int (*getShapeData(int angle) const)[4];
+    const int (*getShapeData() const)[4];
+
+    // ë¸”ë¡ì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”
+    void reset();
 protected:
     int x, y;
     int angle;
     int shapeMatrix[4][4][4];
     BlockColor color;
 
-    Block(int startX, int startY, BlockColor c, const int data[][4][4])
-        : x(startX), y(startY), angle(0), color(c) {
-        memcpy(shapeMatrix, data, sizeof(shapeMatrix));
-    }
-
-public:
-    virtual ~Block() {}
-
-    void move(int dx, int dy) {
-        x += dx;
-        y += dy;
-    }
-
-    // ±âº» rotate ¼³Á¤
-    virtual void rotate(int r = 1) {
-        angle = (angle + r) % 4;
-    }
-
-    // Getter ÇÔ¼ö ¸ğÀ½
-    int getX() const { return x; }
-    int getY() const { return y; }
-    int getAngle() const { return angle; }
-    BlockColor getColor() const { return color; }
-
-    // ÇöÀç ºí·ÏÀÇ Á¤º¸¸¦ ¹İÈ¯ÇÏ´Â ±âº» ¼³Á¤
-    virtual const int (*getShapeData(int angle) const)[4] {
-        return shapeMatrix[angle % 4];
-    }
-
-    const int (*getShapeData() const)[4] {
-        return shapeMatrix[angle];
-    }
-
-    // ºí·ÏÀÇ Á¤º¸¸¦ ÃÊ±âÈ­
-    void reset() {
-        x = 5; y = -4;
-        angle = 0;
-    }
+    Block(int startX, int startY, BlockColor c, const int data[][4][4]);
 };

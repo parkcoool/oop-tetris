@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <conio.h>
 #include "Block.h"
@@ -16,6 +16,7 @@ enum class Command {
 };
 
 class InputHandler {
+private:
     const KeyConfig* config = nullptr;
 public:
     void setConfig(const KeyConfig& cfg) { config = &cfg; }

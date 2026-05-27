@@ -17,6 +17,10 @@ public:
 		RED, VOILET, YELLOW, WHITE
 	};
 
+	enum class MenuResult { RESUME = 0, RESTART = 1, QUIT = 2 };
+
+	enum class MainMenuResult { START = 0, SETTINGS = 1, RANKING = 2 , QUIT = 3};
+
 	ConsoleRenderer();
 	~ConsoleRenderer();
 
@@ -30,11 +34,9 @@ public:
 	void show_gameover();
 
 	// 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
-	enum class MenuResult { RESUME = 0, RESTART = 1, QUIT = 2 };
 	MenuResult show_pause_menu();
 
 	// 메인 메뉴를 출력하고 선택 결과를 반환한다.
-	enum class MainMenuResult { START = 0, SETTINGS = 1, RANKING = 2 , QUIT = 3};
 	MainMenuResult show_main_menu();
 
 	// 키 설정 화면을 출력하고 config를 대화식으로 수정한다.

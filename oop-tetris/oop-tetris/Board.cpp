@@ -1,10 +1,10 @@
-#include "Board.h"
+ï»¿#include "Board.h"
 #include "Block.h"
 
 static constexpr int WALL = -1;
 
-// (nextX, nextY)¿¡¼­ nextAngle °¢µµ·Î blockÀ» ³õ¾ÒÀ» ¶§
-// º® ¶Ç´Â ÀÌ¹Ì °íÁ¤µÈ ºí·Ï°ú Ãæµ¹ÇÏ¸é true ¹ÝÈ¯.
+// (nextX, nextY)ì—ì„œ nextAngle ê°ë„ë¡œ blockì„ ë†“ì•˜ì„ ë•Œ
+// ë²½ ë˜ëŠ” ì´ë¯¸ ê³ ì •ëœ ë¸”ë¡ê³¼ ì¶©ëŒí•˜ë©´ true ë°˜í™˜.
 bool Board::checkCollision(const Block& block, int nextX, int nextY, int nextAngle) const {
     const int (*shape)[4] = block.getShapeData(nextAngle);
 
@@ -16,15 +16,15 @@ bool Board::checkCollision(const Block& block, int nextX, int nextY, int nextAng
             int boardRow = nextY + row;
             int boardCol = nextX + col;
 
-            // ÇÃ·¹ÀÌ ¿µ¿ª °¡·Î ¹üÀ§ ÃÊ°ú ¶Ç´Â ¹Ù´Ú ¾Æ·¡.
+            // í”Œë ˆì´ ì˜ì—­ ê°€ë¡œ ë²”ìœ„ ì´ˆê³¼ ë˜ëŠ” ë°”ë‹¥ ì•„ëž˜.
             if (boardRow >= 20 || boardCol <= 0 || boardCol >= 13)
                 return true;
 
-            // ºí·ÏÀÌ ¾ÆÁ÷ ÇÃ·¹ÀÌ ¿µ¿ª À§¿¡ ÀÖÁö ¾ÊÀ¸¸é Ãæµ¹·Î Ã³¸®ÇÏÁö ¾ÊÀ½.
+            // ë¸”ë¡ì´ ì•„ì§ í”Œë ˆì´ ì˜ì—­ ìœ„ì— ìžˆì§€ ì•Šìœ¼ë©´ ì¶©ëŒë¡œ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ.
             if (boardRow < 0)
                 continue;
 
-            // ÀÌ¹Ì Á¡À¯µÈ ¼¿ (°ÔÀÓÆÇ¿¡ °íÁ¤µÈ ºí·Ï).
+            // ì´ë¯¸ ì ìœ ëœ ì…€ (ê²Œìž„íŒì— ê³ ì •ëœ ë¸”ë¡).
             if (grid[boardRow][boardCol] != 0)
                 return true;
         }
@@ -32,7 +32,7 @@ bool Board::checkCollision(const Block& block, int nextX, int nextY, int nextAng
     return false;
 }
 
-// ÇöÀç À§Ä¡¿¡¼­ blockÀ» ±×¸®µå¿¡ °íÁ¤ÇÏ°í »ö»ó°ªÀ» ±â·Ï
+// í˜„ìž¬ ìœ„ì¹˜ì—ì„œ blockì„ ê·¸ë¦¬ë“œì— ê³ ì •í•˜ê³  ìƒ‰ìƒê°’ì„ ê¸°ë¡
 void Board::mergeBlock(const Block& block) {
     const int (*shape)[4] = block.getShapeData();
     int x = block.getX();
@@ -56,25 +56,25 @@ bool Board::checkRow(int row)
         }
     }
 
-    // ºñ¾î ÀÖ´Â Ä­ÀÌ Á¸ÀçÇÏÁö ¾Ê´Â ²Ë Âù ÁÙÀÓÀ» ÀÇ¹ÌÇÑ´Ù.
+    // ë¹„ì–´ ìžˆëŠ” ì¹¸ì´ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê½‰ ì°¬ ì¤„ìž„ì„ ì˜ë¯¸í•œë‹¤.
     return true;
 }
 
-// ²Ë Âù ÁÙ(¿­ 1~12)ÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ ´ÙÀ½ ¸ðµÎ Á¦°ÅÇÏ°í
-// À§¿¡ ÀÖ´Â ÇàµéÀ» ³»¸°´Ù.
+// ê½‰ ì°¬ ì¤„(ì—´ 1~12)ì´ ìžˆëŠ”ì§€ í™•ì¸í•œ ë‹¤ìŒ ëª¨ë‘ ì œê±°í•˜ê³ 
+// ìœ„ì— ìžˆëŠ” í–‰ë“¤ì„ ë‚´ë¦°ë‹¤.
 void Board::clearRow(int row) {
 
-    // ÇØ´ç Çà À§ÀÇ ¸ðµç ÇàÀ» ÇÑ Ä­¾¿ ³»¸².
+    // í•´ë‹¹ í–‰ ìœ„ì˜ ëª¨ë“  í–‰ì„ í•œ ì¹¸ì”© ë‚´ë¦¼.
     for (int k = row; k > 0; --k) {
         for (int col = 1; col < 13; ++col)
             grid[k][col] = grid[k - 1][col];
     }
-    // ÃÖ»ó´Ü ÇàÀ» ºóÄ­À¸·Î ÃÊ±âÈ­.
+    // ìµœìƒë‹¨ í–‰ì„ ë¹ˆì¹¸ìœ¼ë¡œ ì´ˆê¸°í™”.
     for (int col = 1; col < 13; ++col)
         grid[0][col] = 0;
 }
 
-// ÇöÀç ±×¸®µå¸¦ ÃÊ±âÈ­
+// í˜„ìž¬ ê·¸ë¦¬ë“œë¥¼ ì´ˆê¸°í™”
 void Board::resetBoard()
 {
     for (int row = 0; row < 21; ++row) {

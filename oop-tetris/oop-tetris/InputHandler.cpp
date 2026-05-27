@@ -1,4 +1,4 @@
-#include "InputHandler.h"
+﻿#include "InputHandler.h"
 
 int KeyConfig::readKey() {
     int key = _getch();

@@ -56,13 +56,10 @@ void ConsoleRenderer::SetColor(BlockColor color) {
 
 /******************** public functions ********************/
 
-ConsoleRenderer::ConsoleRenderer() 
-	: randomBlocks(
+ConsoleRenderer::ConsoleRenderer() : randomBlocks(
 		new IBlock(0, 0), new OBlock(0, 0), new ZBlock(0, 0),
 		new SBlock(0, 0), new JBlock(0, 0), new LBlock(0, 0), new TBlock(0, 0)
-	)
-{
-}
+	) { }
 
 ConsoleRenderer::~ConsoleRenderer() {
 	for (int i = 0; i < 7; i++)
@@ -127,7 +124,7 @@ void ConsoleRenderer::initScreen() {
 		Sleep(100);
 	}
 
-	gotoxy(20, 15);
+	gotoxy(20, 16);
 	cout << "Please Press Any Key~!";
 
 	for (int i = 0; true; i++) {

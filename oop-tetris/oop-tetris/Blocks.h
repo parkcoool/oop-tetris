@@ -1,231 +1,74 @@
-#pragma once
-
+ï»¿#pragma once
 #include "Block.h"
 
-//¡á¡á¡á¡á ¸ð¾ç
+// â– â– â– â–  ëª¨ì–‘
 
 class IBlock : public Block {
 public:
-    IBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::SKY_BLUE, I_DATA) {
-    }
-    // °ãÄ¡´Â ¸ð¾ç Á¦°Å
-    void rotate(int r = 1) override {
-        angle = (angle + r) % 2;
-    }
-
-    const int (*getShapeData(int angle) const)[4] override {
-        return shapeMatrix[angle % 2];
-    }
+    IBlock(int startX, int startY);
 private:
-    static inline int I_DATA[2][4][4] = {
-        { {1,0,0,0},
-          {1,0,0,0}, 
-          {1,0,0,0}, 
-          {1,0,0,0} },
-
-        { {1,1,1,1},
-          {0,0,0,0},
-          {0,0,0,0},
-          {0,0,0,0} }
-    };
-
+    static const int I_DATA[4][4][4];
 };
 
 
-//¡á¡á
-//¡á¡á ¸ð¾ç
+// â– â– 
+// â– â–  ëª¨ì–‘
 
 class OBlock : public Block {
 public:
-    OBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::YELLOW, O_DATA) {
-    }
-
-    // °ãÄ¡´Â ¸ð¾ç Á¦°Å
-    void rotate(int r = 1) override { }
-
-    const int (*getShapeData(int angle) const)[4] override {
-        return shapeMatrix[0];
-    }
-
+    OBlock(int startX, int startY);
+    void rotate(int r = 1) override;
+    const int (*getShapeData(int angle) const)[4] override;
 private:
-    static inline int O_DATA[1][4][4] = {
-        { {1,1,0,0}, 
-          {1,1,0,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} }
-    };
+    static const int O_DATA[1][4][4];
 };
 
-
-//¡á
-//¡á¡á
-//¡á ¸ð¾ç
+//  â– 
+// â– â– â– 
 
 class TBlock : public Block {
 public:
-    TBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::VOILET, T_DATA) {
-    }
-
-    // ±âº» rotate »ç¿ë
-
+    TBlock(int startX, int startY);
 private:
-    static inline int T_DATA[4][4][4] = {
-        { {0,1,0,0}, 
-          {1,1,1,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,1,0,0}, 
-          {0,1,1,0}, 
-          {0,1,0,0}, 
-          {0,0,0,0} },
-
-        { {1,1,1,0}, 
-          {0,1,0,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,1,0,0}, 
-          {1,1,0,0}, 
-          {0,1,0,0}, 
-          {0,0,0,0} }
-    };
+    static const int T_DATA[4][4][4];
 };
 
-
-//¡á¡à¡à
-//¡á¡á¡á ¸ð¾ç
+// â– 
+// â– â– â– 
 
 class JBlock : public Block {
 public:
-    JBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::BLUE, J_DATA) {
-    }
-
-    // ±âº» rotate »ç¿ë
-
+    JBlock(int startX, int startY);
 private:
-    static inline int J_DATA[4][4][4] = {
-        { {1,0,0,0}, 
-          {1,1,1,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,1,1,0}, 
-          {0,1,0,0}, 
-          {0,1,0,0}, 
-          {0,0,0,0} },
-
-        { {1,1,1,0},
-          {0,0,1,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,1,0,0}, 
-          {0,1,0,0}, 
-          {1,1,0,0}, 
-          {0,0,0,0} }
-    };
+    static const int J_DATA[4][4][4];
 };
 
-//¡à¡à¡á
-//¡á¡á¡á ¸ð¾ç
+//   â– 
+// â– â– â– 
 
 class LBlock : public Block {
 public:
-    LBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::DARK_YELLOW, L_DATA) {
-    }
-
-    // ±âº» rotate »ç¿ë
-
+    LBlock(int startX, int startY);
 private:
-    static inline int L_DATA[4][4][4] = {
-        { {0,0,1,0}, 
-          {1,1,1,0}, 
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,1,0,0},
-          {0,1,0,0},
-          {0,1,1,0},
-          {0,0,0,0} },
-
-        { {1,1,1,0}, 
-          {1,0,0,0}, 
-          {0,0,0,0},  
-          {0,0,0,0} },
-
-        { {1,1,0,0},
-          {0,1,0,0},
-          {0,1,0,0}, 
-          {0,0,0,0} }
-    };
+    static const int L_DATA[4][4][4];
 };
 
-//¡á¡á¡à
-//¡à¡á¡á ¸ð¾ç
+// â– â–  
+//  â– â– 
 
 class ZBlock : public Block {
 public:
-    ZBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::RED, Z_DATA) {
-    }
-
-    // °ãÄ¡´Â ¸ð¾ç Á¦°Å
-    void rotate(int r = 1) override {
-        angle = (angle + r) % 2;
-    }
-
-    const int (*getShapeData(int angle) const)[4] override {
-        return shapeMatrix[angle % 2];
-    }
-
+    ZBlock(int startX, int startY);
 private:
-    static inline int Z_DATA[2][4][4] = {
-        { {1,1,0,0},
-          {0,1,1,0},
-          {0,0,0,0}, 
-          {0,0,0,0} },
-
-        { {0,0,1,0},
-          {0,1,1,0}, 
-          {0,1,0,0}, 
-          {0,0,0,0} }
-    };
+    static const int Z_DATA[4][4][4];
 };
 
-//¡à¡á¡á
-//¡á¡á¡à ¸ð¾ç
+//  â– â– 
+// â– â–  
 
 class SBlock : public Block {
 public:
-    SBlock(int startX, int startY)
-        : Block(startX, startY, BlockColor::GREEN, S_DATA) {
-    }
-
-    // °ãÄ¡´Â ¸ð¾ç Á¦°Å
-    void rotate(int r = 1) override {
-        angle = (angle + r) % 2;
-    }
-
-    const int (*getShapeData(int angle) const)[4] override {
-        return shapeMatrix[angle % 2];
-    }
-
+    SBlock(int startX, int startY);
 private:
-    static inline int S_DATA[2][4][4] = {
-        { {0,1,1,0},
-          {1,1,0,0},
-          {0,0,0,0},
-          {0,0,0,0} },
-
-        { {0,1,0,0},
-          {0,1,1,0},
-          {0,0,1,0},
-          {0,0,0,0} }
-    };
+    static const int S_DATA[4][4][4];
 };
