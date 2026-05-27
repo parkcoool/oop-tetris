@@ -4,6 +4,7 @@
 #include <consoleapi2.h> // SetConsoleCursorPosition
 #include <processenv.h> // GetStdHandle
 #include <minwindef.h> // DWORD
+#include <wincon.h> // console clear APIs
 #include <synchapi.h> // Sleep
 #include <stdlib.h> // rand, system
 #include <conio.h> // _kbhit, _getche
@@ -141,11 +142,11 @@ void ConsoleRenderer::initScreen() {
 		Sleep(30);
 	}
 	_getche();
-	system("cls");
+	clearScreen();
 }
 
 int ConsoleRenderer::input_data(const KeyConfig& config) {
-	system("cls");
+	clearScreen();
 	int level = 0;
 	SetColor(BlockColor::GRAY);
 
@@ -185,7 +186,7 @@ int ConsoleRenderer::input_data(const KeyConfig& config) {
 		}
 	}
 
-	system("cls");
+	clearScreen();
 	return level - 1;
 }
 
@@ -236,10 +237,9 @@ void ConsoleRenderer::show_gameover() {
 		cout << gameoverString[i];
 	}
 	cin.ignore((numeric_limits<streamsize>::max)(), '\n');
-	fflush(stdin);
 	Sleep(1000);
 	_getche();
-	system("cls");
+	clearScreen();
 }
 
 // 맨 처음 시작 화면에서 블록을 무작위로 생성해 출력한다.
@@ -300,7 +300,16 @@ ConsoleRenderer::MenuResult ConsoleRenderer::show_pause_menu() {
 }
 
 void ConsoleRenderer::clearScreen() {
-	system("cls");
+	COORD topLeft = { 0, 0 };
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+		return;
+	}
+	DWORD cellCount = static_cast<DWORD>(csbi.dwSize.X) * static_cast<DWORD>(csbi.dwSize.Y);
+	DWORD count = 0;
+	FillConsoleOutputCharacter(hConsole, ' ', cellCount, topLeft, &count);
+	FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, topLeft, &count);
+	SetConsoleCursorPosition(hConsole, topLeft);
 }
 
 ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
@@ -560,13 +569,13 @@ void ConsoleRenderer::show_ranking()
 		fixCursor();
 		};
 
-	system("cls");
+	clearScreen();
 	drawFrame();
 	drawScores();
 
 	_getch();
 	PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
-	system("cls");
+	clearScreen();
 }
 
 void ConsoleRenderer::show_hold_block(const Block* block, int level, bool showAll) {

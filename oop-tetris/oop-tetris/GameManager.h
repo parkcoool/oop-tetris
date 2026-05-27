@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <Windows.h>
 #include "Block.h"
 #include "Board.h"
 #include "ConsoleRenderer.h"
@@ -41,8 +42,8 @@ public:
 	void update(int x, int angle);
 
 	// 블록의 낙하 및 그로 인한 상태 변화를 갱신한다.
-	// 충돌한 경우 true 반환
-	bool down();
+	// 블록이 고정되어 다음 블록으로 넘어간 경우 true 반환
+	bool down(bool forceLock = false);
 
 	// 7개의 블록들 중 하나를 생성하여 반환한다.
 	Block* makeNewBlock();
@@ -52,5 +53,19 @@ public:
 
 	// 현재 블록을 홀드 슬롯에 저장한다.
 	void hold();
+
+private:
+	void drawActiveBlock();
+
+	// 현재 블록이 바닥/고정 블록 위에 닿아 있는지 확인한다.
+	bool isCurrentBlockGrounded() const;
+
+	// 현재 블록을 보드에 고정하고 다음 블록으로 교체한다.
+	bool lockCurrentBlock();
+
+	// 락다운 딜레이 시간(ms)
+	static constexpr ULONGLONG LOCK_DELAY_MS = 500;
+	bool lockDelayActive = false;
+	ULONGLONG lockDelayStartTick = 0;
 };
 

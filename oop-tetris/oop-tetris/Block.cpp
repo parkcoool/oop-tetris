@@ -7,7 +7,7 @@ void Block::move(int dx, int dy) {
 }
 
 void Block::rotate(int r) {
-    angle = (angle + r) % 4;
+    angle = ((angle + r) % 4 + 4) % 4;
 }
 
 int Block::getX() const { return x; }
