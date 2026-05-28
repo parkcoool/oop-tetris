@@ -5,6 +5,8 @@ int KeyConfig::readKey() {
     if (key == 0 || key == 224) {
         return 256 + _getch();
     }
+    // 알파벳인 경우 대소문자 구분 없이 인식
+    if (key >= 'a' && key <= 'z') key = key - 'a' + 'A';
     return key;
 }
 
@@ -35,6 +37,12 @@ string KeyConfig::keyName(int key) {
     }
 }
 
+string KeyConfig::bindingName(const KeyBinding& b) {
+    string s = keyName(b.key1);
+    if (b.key2 != -1) s += " / " + keyName(b.key2);
+    return s;
+}
+
 void InputHandler::processInput(Block* currentBlock, InputHandler& handler)
 {
     Command cmd = handler.getCommand();
@@ -48,8 +56,12 @@ void InputHandler::processInput(Block* currentBlock, InputHandler& handler)
         currentBlock->move(1, 0);
         break;
 
-    case Command::ROTATE:
+    case Command::ROTATE_CW:
         currentBlock->rotate();
+        break;
+
+    case Command::ROTATE_CCW:
+        currentBlock->rotate(-1);
         break;
 
     case Command::MOVE_DOWN:
@@ -57,7 +69,6 @@ void InputHandler::processInput(Block* currentBlock, InputHandler& handler)
         break;
 
     case Command::HARD_DROP:
-        // �Ŀ� Board Ŭ���� ���� �� �����ؾߵ�.
         break;
 
     case Command::EXIT:

@@ -9,7 +9,8 @@ enum class Command {
     MOVE_LEFT,
     MOVE_RIGHT,
     MOVE_DOWN,
-    ROTATE,
+    ROTATE_CW,
+    ROTATE_CCW,
     HARD_DROP,
     HOLD,
     EXIT
@@ -24,13 +25,14 @@ public:
     Command getCommand() {
         int key = KeyConfig::readKey();
         if (config) {
-            if (key == config->rotate)    return Command::ROTATE;
-            if (key == config->moveDown)  return Command::MOVE_DOWN;
-            if (key == config->moveLeft)  return Command::MOVE_LEFT;
-            if (key == config->moveRight) return Command::MOVE_RIGHT;
-            if (key == config->hardDrop)  return Command::HARD_DROP;
-            if (key == config->pause)     return Command::EXIT;
-            if (key == config->hold)      return Command::HOLD;
+            if (config->rotateCW.matches(key))   return Command::ROTATE_CW;
+            if (config->rotateCCW.matches(key))  return Command::ROTATE_CCW;
+            if (config->moveDown.matches(key))    return Command::MOVE_DOWN;
+            if (config->moveLeft.matches(key))    return Command::MOVE_LEFT;
+            if (config->moveRight.matches(key))   return Command::MOVE_RIGHT;
+            if (config->hardDrop.matches(key))    return Command::HARD_DROP;
+            if (config->pause.matches(key))       return Command::EXIT;
+            if (config->hold.matches(key))        return Command::HOLD;
         }
         return Command::NONE;
     }

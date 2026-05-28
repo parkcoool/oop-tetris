@@ -151,27 +151,27 @@ int ConsoleRenderer::input_data(const KeyConfig& config) {
 	SetColor(BlockColor::GRAY);
 
 	// 현재 키 바인딩을 동적으로 출력한다.
-	const char* actionNames[7] = {
-		"Rotate", "Move Down", "Hard Drop", "Move Left", "Move Right", "Hold", "Pause"
+	const char* actionNames[8] = {
+		"Rotate CW", "Rotate CCW", "Move Down", "Hard Drop", "Move Left", "Move Right", "Hold", "Pause"
 	};
-	const int* keyPtrs[7] = {
-		&config.rotate, &config.moveDown, &config.hardDrop,
+	const KeyBinding* keyPtrs[8] = {
+		&config.rotateCW, &config.rotateCCW, &config.moveDown, &config.hardDrop,
 		&config.moveLeft, &config.moveRight, &config.hold, &config.pause
 	};
 
 	gotoxy(10, 7);
 	cout << "┏━━━━━━━━━━<GAME KEY>━━━━━━━━━┓";
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		gotoxy(10, 8 + i);
 		cout << "┃ ";
 		cout << left << setw(11) << actionNames[i];
 		cout << ": ";
-		string kname = KeyConfig::keyName(*keyPtrs[i]);
+		string kname = KeyConfig::bindingName(*keyPtrs[i]);
 		cout << left << setw(14) << kname;
 		cout << " ┃";
 		Sleep(10);
 	}
-	gotoxy(10, 15);
+	gotoxy(10, 16);
 	cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
 
 
@@ -376,11 +376,11 @@ ConsoleRenderer::MainMenuResult ConsoleRenderer::show_main_menu() {
 }
 
 void ConsoleRenderer::show_key_settings(KeyConfig& config) {
-	const char* actionNames[7] = {
-		"Rotate", "Move Down", "Move Left", "Move Right", "Hard Drop", "Hold", "Pause"
+	const char* actionNames[8] = {
+		"Rotate CW", "Rotate CCW", "Move Down", "Move Left", "Move Right", "Hard Drop", "Hold", "Pause"
 	};
-	int* keyRefs[7] = {
-		&config.rotate, &config.moveDown, &config.moveLeft,
+	KeyBinding* keyRefs[8] = {
+		&config.rotateCW, &config.rotateCCW, &config.moveDown, &config.moveLeft,
 		&config.moveRight, &config.hardDrop, &config.hold, &config.pause
 	};
 	const int startX = 10, startY = 3;
@@ -394,33 +394,33 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		cout << "┃              KEY SETTINGS              ┃";
 		gotoxy(startX, startY + 2);
 		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 8; i++) {
 			gotoxy(startX, startY + 3 + i);
 			cout << "┃                                        ┃";
 		}
-		gotoxy(startX, startY + 10);
-		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
 		gotoxy(startX, startY + 11);
-		cout << "┃ Up/Dn: select  Enter: rebind  ESC:back ┃";
+		cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫";
 		gotoxy(startX, startY + 12);
+		cout << "┃ Up/Dn: select  1:key1  2:key2  ESC:back┃";
+		gotoxy(startX, startY + 13);
 		cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛";
 	};
 
 	auto drawKeys = [&]() {
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 8; i++) {
 			SetColor(i == selected ? BlockColor::WHITE : BlockColor::GRAY);
 			gotoxy(startX + 1, startY + 3 + i);
 			cout << (i == selected ? "> " : "  ");
 			cout << left << setw(12) << actionNames[i];
 			cout << ": ";
-			cout << left << setw(14) << KeyConfig::keyName(*keyRefs[i]);
-			cout << "          ";
+			cout << left << setw(16) << KeyConfig::bindingName(*keyRefs[i]);
+			cout << "  ";
 		}
 		fixCursor();
 	};
 
 	auto clearStatus = [&]() {
-		gotoxy(startX + 1, startY + 13);
+		gotoxy(startX + 1, startY + 14);
 		cout << "                                              ";
 		fixCursor();
 	};
@@ -433,41 +433,77 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		if (key == 0 || key == 224) {
 			key = _getch();
 			if (key == 72 && selected > 0) selected--;
-			else if (key == 80 && selected < 6) selected++;
+			else if (key == 80 && selected < 7) selected++;
 		}
 		else if (key == 27) {
 			break;
 		}
 		else if (key == 13) {
-			// 리바인드 모드
+			// 슬롯 선택 프롬프트
 			SetColor(BlockColor::YELLOW);
-			gotoxy(startX + 1, startY + 13);
-			cout << "Press new key for [" << actionNames[selected] << "]... (ESC=cancel)  ";
+			gotoxy(startX + 1, startY + 14);
+			cout << "Slot: 1=primary  2=secondary  ESC=cancel  ";
 			fixCursor();
 
-			int newKey = KeyConfig::readKey();
+			int slotKey = _getch();
+			int slot = -1;
+			if (slotKey == '1') slot = 0;
+			else if (slotKey == '2') slot = 1;
 			clearStatus();
 
-			if (newKey != 27) {
-				// 충돌 검사
-				int conflictIdx = -1;
-				for (int j = 0; j < 7; j++) {
-					if (j != selected && *keyRefs[j] == newKey) {
-						conflictIdx = j;
-						break;
-					}
-				}
+			if (slot != -1) {
+				SetColor(BlockColor::YELLOW);
+				gotoxy(startX + 1, startY + 14);
+				if (slot == 0)
+					cout << "New primary key for [" << actionNames[selected] << "]... (ESC=cancel)  ";
+				else
+					cout << "New 2nd key for [" << actionNames[selected] << "]... (ESC=clear)  ";
+				fixCursor();
 
-				if (conflictIdx >= 0) {
-					SetColor(BlockColor::RED);
-					gotoxy(startX + 1, startY + 13);
-					cout << "Already used by [" << actionNames[conflictIdx] << "]! Not changed.  ";
-					fixCursor();
-					Sleep(1500);
-					clearStatus();
+				int newKey = KeyConfig::readKey();
+				clearStatus();
+
+				if (newKey == 27) {
+					// 슬롯 2 + ESC: 보조 키를 지운다. 슬롯 1 + ESC: 취소.
+					if (slot == 1) keyRefs[selected]->key2 = -1;
 				}
 				else {
-					*keyRefs[selected] = newKey;
+					// 다른 액션과 충돌 검사
+					int conflictIdx = -1;
+					for (int j = 0; j < 8; j++) {
+						if (j == selected) continue;
+						if (keyRefs[j]->key1 == newKey || keyRefs[j]->key2 == newKey) {
+							conflictIdx = j;
+							break;
+						}
+					}
+					// 같은 액션의 다른 슬롯과 중복 검사
+					bool sameAction = false;
+					if (conflictIdx == -1) {
+						int otherKey = (slot == 0) ? keyRefs[selected]->key2 : keyRefs[selected]->key1;
+						if (otherKey != -1 && otherKey == newKey) sameAction = true;
+					}
+
+					if (conflictIdx >= 0) {
+						SetColor(BlockColor::RED);
+						gotoxy(startX + 1, startY + 14);
+						cout << "Already used by [" << actionNames[conflictIdx] << "]! Not changed.  ";
+						fixCursor();
+						Sleep(1500);
+						clearStatus();
+					}
+					else if (sameAction) {
+						SetColor(BlockColor::RED);
+						gotoxy(startX + 1, startY + 14);
+						cout << "Already assigned to this action! Not changed.     ";
+						fixCursor();
+						Sleep(1500);
+						clearStatus();
+					}
+					else {
+						if (slot == 0) keyRefs[selected]->key1 = newKey;
+						else keyRefs[selected]->key2 = newKey;
+					}
 				}
 			}
 		}

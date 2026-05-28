@@ -77,8 +77,12 @@ void GameManager::run()
 				// 입력한 키에 따라 그에 대한 동작을 할 수 있는지 확인하고,
 				// 가능하다면 수행한다.
 				switch (key) {
-				case Command::ROTATE:		// 회전
+				case Command::ROTATE_CW:	// 시계 방향 회전
 					update(currentBlock->getX(), currentBlock->getAngle() + 1);
+					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					break;
+				case Command::ROTATE_CCW:	// 반시계 방향 회전
+					update(currentBlock->getX(), currentBlock->getAngle() - 1);
 					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::MOVE_LEFT:	// 왼쪽으로 한 칸 이동
