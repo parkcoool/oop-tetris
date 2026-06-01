@@ -125,7 +125,7 @@ void ConsoleRenderer::initScreen() {
 		Sleep(100);
 	}
 
-	gotoxy(20, 16);
+	gotoxy(21, 17);
 	cout << "Please Press Any Key~!";
 
 	for (int i = 0; true; i++) {
@@ -221,6 +221,9 @@ void ConsoleRenderer::show_gamestat(bool printed_text, int level, int score, int
 
 		gotoxy(45, 13);
 		cout << "LINES";
+
+		gotoxy(45, 16);
+		cout << "TIME";
 	}
 	gotoxy(51, 8);
 	cout << level + 1;
@@ -228,6 +231,26 @@ void ConsoleRenderer::show_gamestat(bool printed_text, int level, int score, int
 	cout << setw(10) << score;
 	gotoxy(45, 14);
 	cout << setw(10) << stage_data.getClearLine() - clearedLines;
+}
+
+void ConsoleRenderer::show_time(std::chrono::duration<double> elapsedTime) {
+	// 경과 시간을 밀리초 단위 정수로 변환
+	long long total_ms = static_cast<long long>(elapsedTime.count() * 1000);
+
+	int minutes = (total_ms / 1000) / 60;
+	int seconds = (total_ms / 1000) % 60;
+	int centiseconds = (total_ms % 1000) / 10; // 100분의 1초 (2자리 출력용)
+
+	SetColor(BlockColor::GRAY);
+	gotoxy(45, 17);
+
+	// MM:SS.xx 형태로 출력 (깜빡임 최소화)
+	cout << right << setfill('0')
+		<< setw(2) << minutes << ":"
+		<< setw(2) << seconds << "."
+		<< setw(2) << centiseconds;
+
+	cout << setfill(' '); // 공백 채우기로 원상 복구
 }
 
 void ConsoleRenderer::show_gameover() {

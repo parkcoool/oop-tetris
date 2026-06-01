@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <chrono>
 #include "Block.h"
 #include "Board.h"
 #include "ConsoleRenderer.h"
@@ -16,6 +17,7 @@ private:
 	ConsoleRenderer renderer;
 	KeyConfig keyConfig;
 	InputHandler inputHandler;
+	std::chrono::steady_clock::time_point startTime;
 
 	// 레벨별 스테이지의 난이도 정보를 저장한다.
 	StageData stageData[10] = {

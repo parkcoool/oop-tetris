@@ -70,7 +70,9 @@ void GameManager::run()
 		renderer.show_hold_block(holdBlock, level, true);
 		drawActiveBlock();
 		renderer.show_gamestat(true, level, score, clearedLines, stageData[level]);
+		startTime = std::chrono::steady_clock::now();
 		for (int i = 1; ; i++) {
+			renderer.show_time(std::chrono::steady_clock::now() - startTime);
 			if (_kbhit()) {
 				Command key = inputHandler.getCommand();
 
@@ -109,17 +111,27 @@ void GameManager::run()
 				}
 				case Command::EXIT:
 				{
+					// 일시정지 시작 시간 기록
+					auto pauseStartTime = std::chrono::steady_clock::now();
+
 					ConsoleRenderer::MenuResult result = renderer.show_pause_menu();
 					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+
 					if (result == ConsoleRenderer::MenuResult::QUIT) {
 						return;
-					} else if (result == ConsoleRenderer::MenuResult::RESTART) {
+					}
+					else if (result == ConsoleRenderer::MenuResult::RESTART) {
 						renderer.clearScreen();
 						isRestarting = true;
-					} else {
+					}
+					else {
 						// RESUME: 보드를 다시 그려서 메뉴 오버레이를 지운다.
 						renderer.show_total_block(board.getGrid(), level, true);
 						drawActiveBlock();
+
+						// 일시정지 종료 시간 기록 후, 멈춰있던 시간만큼 startTime을 미뤄줌
+						auto pauseEndTime = std::chrono::steady_clock::now();
+						startTime += (pauseEndTime - pauseStartTime);
 					}
 					break;
 				}

@@ -17,7 +17,7 @@ public:
     KeyBinding moveDown   = {256 + 80, -1};    // 아래 화살표
     KeyBinding moveLeft   = {256 + 75, -1};    // 왼쪽 화살표
     KeyBinding moveRight  = {256 + 77, -1};    // 오른쪽 화살표
-    KeyBinding hold       = {9,  -1};           // Tab
+    KeyBinding hold       = {'C',  -1};           // C
     KeyBinding hardDrop   = {32, -1};           // Space
     KeyBinding pause      = {27, -1};           // ESC
 

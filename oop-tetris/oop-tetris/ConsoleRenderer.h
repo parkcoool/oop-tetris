@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <winnt.h> // HANDLE
 #include <string> // string
+#include <chrono>
 #include "Block.h"
 #include "StageData.h"
 #include "KeyConfig.h"
@@ -31,6 +32,7 @@ public:
 	int input_data(const KeyConfig& config);
 	void show_next_block(const Block& block, int level, bool showAll = false);
 	void show_gamestat(bool printed_text, int level, int score, int clearedLines, StageData& stage_data);
+	void show_time(std::chrono::duration<double> elapsedTime);
 	void show_gameover();
 
 	// 일시정지 메뉴를 출력하고 선택 결과를 반환한다.
