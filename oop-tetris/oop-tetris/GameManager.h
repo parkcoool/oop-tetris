@@ -14,6 +14,7 @@ private:
 	Block* currentBlock = nullptr, * nextBlock = nullptr, * holdBlock = nullptr;
 	int ghostY;
 	Block* randomBlocks[7];
+	Block* bombBlock;
 	ConsoleRenderer renderer;
 	KeyConfig keyConfig;
 	InputHandler inputHandler;

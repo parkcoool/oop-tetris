@@ -28,6 +28,12 @@ public:
 
     // 블록의 정보를 초기화
     void reset();
+
+    // 폭탄 블록 판단 함수
+    virtual bool isBomb() const {
+        return false; // 기본 블록들은 false
+    }
+
 protected:
     int x, y;
     int angle;

@@ -12,6 +12,8 @@ GameManager::GameManager()
 		new SBlock(5, -4), new JBlock(5, -4), new LBlock(5, -4), new IBlock(5, -4)
 	)
 {
+	// 폭탄 블록 초기 위치 설정
+	bombBlock = new BombBlock(5, -4);
 	ifstream inFile("rank.txt");
 
 	if (!inFile.is_open()) {
@@ -29,6 +31,8 @@ GameManager::~GameManager()
 {
 	for (int i = 0; i < 7; i++)
 		delete randomBlocks[i];
+	// 폭탄 블록 메모리 해제
+	delete bombBlock;
 }
 
 // 게임을 끝날 때까지 실행한다.
@@ -81,11 +85,11 @@ void GameManager::run()
 				switch (key) {
 				case Command::ROTATE_CW:	// 시계 방향 회전
 					update(currentBlock->getX(), currentBlock->getAngle() + 1);
-					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT("se_game_rotate.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::ROTATE_CCW:	// 반시계 방향 회전
 					update(currentBlock->getX(), currentBlock->getAngle() - 1);
-					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					PlaySound(TEXT("se_game_rotate.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				case Command::MOVE_LEFT:	// 왼쪽으로 한 칸 이동
 					update(currentBlock->getX() - 1, currentBlock->getAngle());
@@ -102,11 +106,11 @@ void GameManager::run()
 					break;
 				case Command::HARD_DROP:	// 아래로 더 이상 내려갈 수 없을 때까지 이동
 				{
+					PlaySound(TEXT("se_game_fixa.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					renderer.erase_cur_block(*currentBlock, currentBlock->getY());
 					renderer.erase_cur_block(*currentBlock, ghostY);
 					currentBlock->move(0, ghostY - currentBlock->getY());
 					lockCurrentBlock();
-					PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				}
 				case Command::EXIT:
@@ -137,6 +141,7 @@ void GameManager::run()
 				}
 				case Command::HOLD:
 					hold();
+					PlaySound(TEXT("se_game_hold.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					break;
 				};
 			}
@@ -326,6 +331,13 @@ bool GameManager::down(bool forceLock)
 // 7개의 블록들 중 하나를 생성하여 반환한다.
 Block* GameManager::makeNewBlock()
 {
+	// 폭탄 블록 등장 확률 5%
+	if (rand() % 100 < 5) {
+		bombBlock->reset();
+		return bombBlock;
+	}
+
+	// 기존 블록 생성 로직
 	if (rand() % 100 <= stageData[level].getRate()) {
 		randomBlocks[6]->reset();
 		return randomBlocks[6];
@@ -391,22 +403,39 @@ bool GameManager::lockCurrentBlock()
 		return true;
 	}
 
-	// 현재 블록을 그리드에 고정 시킨 후
-	// 위에서부터 한 줄씩 검사하여 꽉 찬 줄을 제거한다.
-	board.mergeBlock(*currentBlock);
-	bool cleared = false;
-	for (int row = 0; row < 20; row++) {
-		if (board.checkRow(row)) {
-			clearedLines++; cleared = true;
-			score += 100 + level * 10 + rand() % 10;
+	// 현재 블록이 폭탄인 경우의 예외 처리
+	if (currentBlock->isBomb()) {
+		int targetRow = currentBlock->getY(); // 폭탄이 멈춘 Y축 행 위치
+
+		// 범위를 벗어나지 않도록 조건문
+		if (targetRow+1>= 0 && targetRow+1 < 20) {
+			clearedLines++;
+			score += 150; // 폭탄 제거 보너스 점수
+
 			renderer.show_total_block(board.getGrid(), level, true);
-			renderer.show_clear_animation(row);
-			board.clearRow(row);
+			renderer.show_clear_animation(targetRow+1);
+			board.clearRow(targetRow+1);
+
 			renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
-			PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		}
 	}
-	renderer.show_total_block(board.getGrid(), level, cleared);
+	// 일반 블록인 경우 (기존 코드 유지)
+	else {
+		// 현재 블록을 그리드에 고정 시킨 후 위에서부터 한 줄씩 검사하여 꽉 찬 줄을 제거한다.
+		board.mergeBlock(*currentBlock);
+		bool cleared = false;
+		for (int row = 0; row < 20; row++) {
+			if (board.checkRow(row)) {
+				clearedLines++; cleared = true;
+				score += 100 + level * 10 + rand() % 10;
+				renderer.show_total_block(board.getGrid(), level, true);
+				renderer.show_clear_animation(row);
+				board.clearRow(row);
+				renderer.show_gamestat(false, level, score, clearedLines, stageData[level]);
+			}
+		}
+	}
+	renderer.show_total_block(board.getGrid(), level, true);
 
 	// 현재 블록과 다음 나올 블록을 갱신한다.
 	nextBlock->reset();

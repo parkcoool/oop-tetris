@@ -168,3 +168,22 @@ const int SBlock::S_DATA[4][4][4] = {
           {1,1,0,0},
           {0,1,0,0} }
 };
+
+// 폭탄 블록
+BombBlock::BombBlock(int startX, int startY)
+    : Block(startX, startY, BlockColor::WHITE, BB_DATA)
+{
+
+}
+const int BombBlock::BB_DATA[1][4][4] = {
+        { {0,0,0,0},
+          {0,1,0,0},
+          {0,0,0,0},
+          {0,0,0,0} },
+
+};
+void BombBlock::rotate(int r) {}
+
+const int (*BombBlock::getShapeData(int angle) const)[4] {
+    return BB_DATA[0];
+}

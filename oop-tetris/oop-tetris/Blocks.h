@@ -72,3 +72,19 @@ public:
 private:
     static const int S_DATA[4][4][4];
 };
+
+// 폭탄
+class BombBlock : public Block {
+
+public:
+    BombBlock(int startX, int startY);
+    void rotate(int r = 1) override;
+    const int (*getShapeData(int angle) const)[4] override;
+
+    // 폭탄 블록 판단 함수
+    bool isBomb() const override {
+        return true; // 기본 블록들은 true
+    }
+private:
+    static const int BB_DATA[1][4][4];
+};

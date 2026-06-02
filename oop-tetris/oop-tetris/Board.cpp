@@ -1,5 +1,9 @@
 ﻿#include "Board.h"
 #include "Block.h"
+#include <windows.h> 
+#include <mmsystem.h> // PlaySound
+
+#pragma comment(lib, "winmm.lib")
 
 static constexpr int WALL = -1;
 
@@ -72,6 +76,7 @@ void Board::clearRow(int row) {
     // 최상단 행을 빈칸으로 초기화.
     for (int col = 1; col < 13; ++col)
         grid[0][col] = 0;
+    PlaySound(TEXT("se_game_single.wav"), NULL, SND_FILENAME | SND_ASYNC);
 }
 
 // 현재 그리드를 초기화
