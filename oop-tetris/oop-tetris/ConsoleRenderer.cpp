@@ -458,13 +458,14 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 		int key = _getch();
 		if (key == 0 || key == 224) {
 			key = _getch();
-			if (key == 72 && selected > 0) selected--; // 위 방향키
-			else if (key == 80 && selected < 7) selected++; // 아래 방향키
+			if (key == 72 && selected > 0) { selected--; PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC); } // 위 방향키
+			else if (key == 80 && selected < 7) { selected++; PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC); } // 아래 방향키
 		}
 		else if (key == 27) { // ESC 키를 누르면 메인 메뉴로 돌아갑니다.
 			break;
 		}
 		else if (key == 13) { // 엔터를 누르면 선택한 동작에 대해 지정할 커스텀 키를 물어보는 메시지를 띄웁니다.
+			PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			SetColor(BlockColor::YELLOW);
 			gotoxy(startX + 1, startY + 14);
 			cout << "Slot: 1=primary  2=secondary  ESC=cancel  ";
@@ -472,8 +473,8 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 
 			int slotKey = _getch();
 			int slot = -1;
-			if (slotKey == '1') slot = 0;
-			else if (slotKey == '2') slot = 1;
+			if (slotKey == '1') { slot = 0; PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC); }
+			else if (slotKey == '2') { slot = 1; PlaySound(TEXT("next.wav"), NULL, SND_FILENAME | SND_ASYNC); }
 			clearStatus();
 
 			// 1 또는 2 이외의 키를 누르면 되돌아가 다시 옵션을 선택하도록 합니다.
@@ -532,6 +533,7 @@ void ConsoleRenderer::show_key_settings(KeyConfig& config) {
 					else { // 충돌 검사에 걸리지 않았다면 해당 동작에 키를 새롭게 지정합니다.
 						if (slot == 0) keyRefs[selected]->key1 = newKey;
 						else keyRefs[selected]->key2 = newKey;
+						PlaySound(TEXT("right.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					}
 				}
 			}
